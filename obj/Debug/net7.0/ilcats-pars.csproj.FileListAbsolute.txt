@@ -1,0 +1,17 @@
+/home/v/Downloads/ilcats-pars/bin/Debug/net7.0/ilcats-pars
+/home/v/Downloads/ilcats-pars/bin/Debug/net7.0/ilcats-pars.deps.json
+/home/v/Downloads/ilcats-pars/bin/Debug/net7.0/ilcats-pars.runtimeconfig.json
+/home/v/Downloads/ilcats-pars/bin/Debug/net7.0/ilcats-pars.dll
+/home/v/Downloads/ilcats-pars/bin/Debug/net7.0/ilcats-pars.pdb
+/home/v/Downloads/ilcats-pars/bin/Debug/net7.0/MySqlConnector.dll
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.csproj.AssemblyReference.cache
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.GeneratedMSBuildEditorConfig.editorconfig
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.AssemblyInfoInputs.cache
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.AssemblyInfo.cs
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.csproj.CoreCompileInputs.cache
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.csproj.CopyComplete
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.dll
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/refint/ilcats-pars.dll
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.pdb
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.genruntimeconfig.cache
+/home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ref/ilcats-pars.dll
