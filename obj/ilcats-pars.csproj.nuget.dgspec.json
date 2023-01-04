@@ -38,6 +38,10 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "AngleSharp": {
+              "target": "Package",
+              "version": "[0.17.1, )"
+            },
             "MySqlConnector": {
               "target": "Package",
               "version": "[2.2.5, )"

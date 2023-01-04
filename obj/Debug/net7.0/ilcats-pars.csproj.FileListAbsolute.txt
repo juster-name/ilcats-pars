@@ -15,3 +15,4 @@
 /home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.pdb
 /home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ilcats-pars.genruntimeconfig.cache
 /home/v/Downloads/ilcats-pars/obj/Debug/net7.0/ref/ilcats-pars.dll
+/home/v/Downloads/ilcats-pars/bin/Debug/net7.0/AngleSharp.dll
