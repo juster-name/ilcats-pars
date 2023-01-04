@@ -8,13 +8,13 @@ namespace VladlenKazmiruk
     class CLIProgram
     {
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
+            await foreach (var name in Test.getTestNames())
+            {
+                Csl.WriteLine(name);
+            }
             SqlConnectionCheck();
-
-            var carNames = Test.getTestNames();
-            foreach (var name in carNames){
-                Csl.WriteLine(name);}
         }
 
         static void SqlConnectionCheck()
@@ -40,18 +40,20 @@ namespace VladlenKazmiruk
 
     public static class Test
     {
-        public static IEnumerable<string> getTestNames()
+        public static async IAsyncEnumerable<string> getTestNames()
         {
             var config = Configuration.Default.WithDefaultLoader();
             var address = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
             var context = BrowsingContext.New(config);
-            var openDocTask = context.OpenAsync(address);
-            var document = 
-                openDocTask.WaitAsync(CancellationToken.None).Result;
+            var document = await context.OpenAsync(address);
             var carCellsSelector = 
                 "div[class='List Multilist'] div[class='Header'] div[class='name']";
+            var carNameElements =  document.QuerySelectorAll(carCellsSelector);
 
-            return document.QuerySelectorAll(carCellsSelector).Select(el => el.TextContent);
+            foreach (var element in carNameElements)
+            {
+                yield return element.TextContent;
+            }
         }
     }
 }
