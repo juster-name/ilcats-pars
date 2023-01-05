@@ -11,8 +11,10 @@ namespace VladlenKazmiruk
         public int? Code { get => code; set => code = value; }
         public HashSet<Complectation>? Complectations { get => complectation; set => complectation = value; }
         public Car? Car { get => car; set => car = value; }
+        public string? Url { get => url; set => url = value; }
 
         int? code = null;
+        string? url = null;
         string? dateStart = null;
         string? dateEnd = null;
         string? complectationCode = null;
