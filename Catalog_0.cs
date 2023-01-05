@@ -10,7 +10,7 @@ namespace VladlenKazmiruk
         public Complectation? Complectation { get => complectation; set => complectation = value; }
 
         string? name;
-        int? complectation_id;
+        string? complectation_id;
         HashSet<Catalog_1>? catalogs_1;
         Complectation? complectation;
 

@@ -13,7 +13,7 @@ namespace VladlenKazmiruk
         public Car? Car { get => car; set => car = value; }
         public string? Url { get => url; set => url = value; }
 
-        int? code = null;
+        string? code = null;
         string? url = null;
         string? dateStart = null;
         string? dateEnd = null;
