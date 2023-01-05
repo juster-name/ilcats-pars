@@ -47,8 +47,9 @@ namespace VladlenKazmiruk
 
     public static class Test
     {
+        static string topLevelSelector = ".Multilist";
+        static string carCellSelector = ":scope > div[class='List']"; // :scope для topLevelSelector
         static string carNameSelector = "div[class='name']";
-
         static string carInfoSelector = "div[class='List'] div[class='List']";
         static string carDatesSelector = "div[class='dateRange']";
         static string carComplCodeSelector = "div[class='modelCode']";
@@ -60,12 +61,10 @@ namespace VladlenKazmiruk
             var context = BrowsingContext.New(config);
             var document = await context.OpenAsync(address);
 
-            var carCells = document.QuerySelectorAll(".Multilist")[0].QuerySelectorAll(":scope > div[class='List']");
-            //var carNameElements =  document.QuerySelectorAll(carNameSelector);
-            //var carDateElements = document.QuerySelectorAll(carDatesSelector);
-            //var carComplCodeElements = document.QuerySelectorAll(carComplCodeSelector);
+            // :scope для поиска только по верхнему уровню в .Multilist
+            // [0] для обхода Possible NullReference от QuerySelector
+            var carCells = document.QuerySelectorAll(topLevelSelector)[0].QuerySelectorAll(carCellSelector);
 
-            //var cars = System.Collections.<Car>(100);
             foreach (var cellEl in carCells )
             {
                 var car = new Car(cellEl);
@@ -74,7 +73,6 @@ namespace VladlenKazmiruk
                 car.Models = getCarModels(cellEl);
 
                 yield return car;
-                //cars.Add(new Car(cellEl));
             }
         }
 
