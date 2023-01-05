@@ -1,7 +1,9 @@
 
+using AngleSharp.Dom;
+
 namespace VladlenKazmiruk
 {
-    public class CarModel
+    public class CarModel : DomElementContainer
     {
         public string? DateStart { get => dateStart; set => dateStart = value; }
         public string? DateEnd { get => dateEnd; set => dateEnd = value; }
@@ -16,6 +18,9 @@ namespace VladlenKazmiruk
         string? complectationCode = null;
         HashSet<Complectation>? complectation = null;
         Car? car;
-        
+
+        public CarModel(IElement domElement) : base(domElement)
+        {
+        }
     }
 }

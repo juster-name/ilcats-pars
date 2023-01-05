@@ -1,7 +1,9 @@
 
+using AngleSharp.Dom;
+
 namespace VladlenKazmiruk
 {
-    public class Complectation
+    public class Complectation : DomElementContainer
     {
 
         public string? Body { get => body; set => body = value; }
@@ -24,6 +26,10 @@ namespace VladlenKazmiruk
         string? destination2;
 
         CarModel? carModel;
+
+        public Complectation(IElement domElement) : base(domElement)
+        {
+        }
     }
 
 }
