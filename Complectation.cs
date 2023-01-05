@@ -1,7 +1,7 @@
 
 namespace VladlenKazmiruk
 {
-    public class Complectations
+    public class Complectation
     {
 
         public string? Body { get => body; set => body = value; }
@@ -12,7 +12,7 @@ namespace VladlenKazmiruk
         public string? Doors_number { get => doors_number; set => doors_number = value; }
         public string? Destination1 { get => destination1; set => destination1 = value; }
         public string? Destination2 { get => destination2; set => destination2 = value; }
-
+        public CarModel? CarModel { get => carModel; set => carModel = value; }
 
         string? body;
         string? grade;
@@ -22,6 +22,8 @@ namespace VladlenKazmiruk
         string? doors_number;
         string? destination1;
         string? destination2;
+
+        CarModel? carModel;
     }
 
 }

@@ -7,13 +7,15 @@ namespace VladlenKazmiruk
         public string? DateEnd { get => dateEnd; set => dateEnd = value; }
         public string? ComplectationCode { get => complectationCode; set => complectationCode = value; }
         public int? Code { get => code; set => code = value; }
-        public HashSet<Complectations>? Complectations { get => complectations; set => complectations = value; }
+        public HashSet<Complectation>? Complectations { get => complectation; set => complectation = value; }
+        public Car? Car { get => car; set => car = value; }
 
         int? code = null;
         string? dateStart = null;
         string? dateEnd = null;
         string? complectationCode = null;
-        HashSet<Complectations>? complectations = null;
+        HashSet<Complectation>? complectation = null;
+        Car? car;
         
     }
 }
