@@ -27,8 +27,9 @@ namespace VladlenKazmiruk
 
         CarModel? carModel;
 
-        public Complectation(IElement domElement) : base(domElement)
+        public Complectation(IElement domElement, CarModel? carModel = null) : base(domElement)
         {
+            this.carModel = carModel;
         }
     }
 

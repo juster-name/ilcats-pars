@@ -10,8 +10,9 @@ namespace VladlenKazmiruk
         string? name;
         Catalog_0? catalog_0;
 
-        public Catalog_1(IElement domElement) : base(domElement)
+        public Catalog_1(IElement domElement, Catalog_0? catalog_0 = null) : base(domElement)
         {
+            this.catalog_0 = catalog_0;
         }
     }
 }

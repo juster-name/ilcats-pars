@@ -19,8 +19,9 @@ namespace VladlenKazmiruk
         HashSet<Complectation>? complectation = null;
         Car? car;
 
-        public CarModel(IElement domElement) : base(domElement)
+        public CarModel(IElement domElement, Car? car = null) : base(domElement)
         {
+            this.car = car;
         }
     }
 }

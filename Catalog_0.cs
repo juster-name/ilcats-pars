@@ -14,8 +14,9 @@ namespace VladlenKazmiruk
         HashSet<Catalog_1>? catalogs_1;
         Complectation? complectation;
 
-        public Catalog_0(IElement domElement) : base(domElement)
+        public Catalog_0(IElement domElement, Complectation? complectation = null) : base(domElement)
         {
+            this.complectation = complectation;
         }
     }
 }
