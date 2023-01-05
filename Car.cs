@@ -7,9 +7,9 @@ namespace VladlenKazmiruk
     {
         
         public string? Name { get => name; set => name = value; }
-        public IEnumerable<CarModel>? Models { get => models; set => models = value; }
+        public IEnumerable<CarModel> Models { get => models; set => models = value; }
 
-        private IEnumerable<CarModel>? models = null;
+        private IEnumerable<CarModel> models = Enumerable.Empty<CarModel>();
         string? name = null;
 
         public Car(IElement domElement) : base(domElement)
