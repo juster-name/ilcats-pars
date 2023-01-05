@@ -5,8 +5,7 @@ namespace VladlenKazmiruk
 {
     public class CarModel : DomElementContainer
     {
-        public string? DateStart { get => dateStart; set => dateStart = value; }
-        public string? DateEnd { get => dateEnd; set => dateEnd = value; }
+        public string? DateRange { get => dateRange; set => dateRange = value; }
         public string? ComplectationCode { get => complectationCode; set => complectationCode = value; }
         public string? Code { get => code; set => code = value; }
         public HashSet<Complectation>? Complectations { get => complectation; set => complectation = value; }
@@ -15,8 +14,7 @@ namespace VladlenKazmiruk
 
         string? code = null;
         string? url = null;
-        string? dateStart = null;
-        string? dateEnd = null;
+        string? dateRange = null;
         string? complectationCode = null;
         HashSet<Complectation>? complectation = null;
         Car? car;
