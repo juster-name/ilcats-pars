@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using AngleSharp;
+using System.Collections.Concurrent;
 using MySql = MySqlConnector;
 using Csl = System.Console;
 
@@ -10,13 +11,19 @@ namespace VladlenKazmiruk
 
         public static async Task Main(string[] args)
         {
-            await foreach (var name in Test.getTestNames())
+            await foreach (var car in Test.getCars())
             {
-                Csl.WriteLine(name);
+                Csl.WriteLine(car.Name);
+                foreach (CarModel carModel in car.Models)
+                {
+                    Csl.WriteLine($"\t{carModel.Url}");
+                    Csl.WriteLine($"\t{carModel.Code} | {carModel.DateRange} | {carModel.ComplectationCode}");
+                }
+                
             }
-            SqlConnectionCheck();
+            //SqlConnectionCheck();
         }
-
+        
         static void SqlConnectionCheck()
         {
             string mysqlConnectionString = System.IO.File.ReadAllText("db-string.user");
@@ -40,20 +47,57 @@ namespace VladlenKazmiruk
 
     public static class Test
     {
-        public static async IAsyncEnumerable<string> getTestNames()
+        static string carNameSelector = "div[class='name']";
+
+        static string carInfoSelector = "div[class='List'] div[class='List']";
+        static string carDatesSelector = "div[class='dateRange']";
+        static string carComplCodeSelector = "div[class='modelCode']";
+
+        public static async IAsyncEnumerable<Car> getCars()
         {
             var config = Configuration.Default.WithDefaultLoader();
             var address = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
             var context = BrowsingContext.New(config);
             var document = await context.OpenAsync(address);
-            var carCellsSelector = 
-                "div[class='List Multilist'] div[class='Header'] div[class='name']";
-            var carNameElements =  document.QuerySelectorAll(carCellsSelector);
 
-            foreach (var element in carNameElements)
+            var carCells = document.QuerySelectorAll(".Multilist")[0].QuerySelectorAll(":scope > div[class='List']");
+            //var carNameElements =  document.QuerySelectorAll(carNameSelector);
+            //var carDateElements = document.QuerySelectorAll(carDatesSelector);
+            //var carComplCodeElements = document.QuerySelectorAll(carComplCodeSelector);
+
+            //var cars = System.Collections.<Car>(100);
+            foreach (var cellEl in carCells )
             {
-                yield return element.TextContent;
+                var car = new Car(cellEl);
+                var carNameEl = cellEl.QuerySelector(carNameSelector);
+                car.Name = carNameEl?.TextContent; 
+                car.Models = getCarModels(cellEl);
+
+                yield return car;
+                //cars.Add(new Car(cellEl));
             }
+        }
+
+        public static IEnumerable<CarModel> getCarModels(AngleSharp.Dom.IElement topElement)
+        {
+                var carInfos = topElement.QuerySelectorAll(carInfoSelector);
+                var carModels = new BlockingCollection<CarModel>();
+
+                foreach (var carInfoEl in carInfos)
+                {
+                    var carModel = new CarModel(carInfoEl);
+
+                    var idEl = carInfoEl.QuerySelector("a");
+                    carModel.Url = idEl?.GetAttribute("href");
+                    carModel.Code = idEl?.TextContent;
+
+                    carModel.DateRange = carInfoEl.QuerySelector(carDatesSelector)?.TextContent;
+                    carModel.ComplectationCode = carInfoEl.QuerySelector(carComplCodeSelector)?.TextContent;
+
+                    carModels.Add(carModel);
+                }
+
+                return carModels;
         }
     }
 }
