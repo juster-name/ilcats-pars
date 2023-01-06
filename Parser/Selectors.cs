@@ -7,12 +7,12 @@ namespace VladlenKazmiruk
     {
         public static class Selectors
         {
-            static string topLevelSelector = ".Multilist";
-            static string carCellSelector = ":scope > div[class='List']"; // :scope для topLevelSelector
-            static string carNameSelector = "div[class='name']";
-            static string carInfoSelector = "div[class='List'] div[class='List']";
-            static string carDatesSelector = "div[class='dateRange']";
-            static string carComplCodeSelector = "div[class='modelCode']";
+            public static string topLevelSelector = ".Multilist";
+            public static string carCellSelector = ":scope > div[class='List']"; // :scope для topLevelSelector
+            public static string carNameSelector = "div[class='name']";
+            public static string carInfoSelector = "div[class='List'] div[class='List']";
+            public static string carDatesSelector = "div[class='dateRange']";
+            public static string carComplCodeSelector = "div[class='modelCode']";
         }
     }
 }
