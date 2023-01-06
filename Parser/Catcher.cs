@@ -32,16 +32,16 @@ namespace VladlenKazmiruk
             public IElement? CurrentElement { get => currentElement;} 
 
             // Расширяющие классы не имеют доступа к Context и TopElement
-            IElement contextElement; // Не может быть null, так как используется при поиске topElement
+            IElement? contextElement; // Элемент контекста
             IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
             IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
             IHtmlCollection<IElement>? elementCollection = null; // Аналогично предыдущему полю
 
-            public BaseCather(IElement? contextElement) // Обязательный родительский элемент (контекст) при инициализации
+            public BaseCather(IElement? contextElement) // Родительский элемент (контекст) при инициализации
             {
-                if (contextElement is null){
-                    throw new NullReferenceException("contextElement must not be null");
-                }
+                //if (contextElement is null){
+                //    throw new NullReferenceException("contextElement must not be null");
+                //}
 
                 this.contextElement = contextElement;
             }
@@ -86,10 +86,14 @@ namespace VladlenKazmiruk
             // Проверяем value на null
             // берем значения для инициализации из executeInitialization
             // передавая аргумент initArg.
-            private N instancetNotNull<N>(N? value, Func<IElement, N?> executeInitialization, IElement initArg)
+            private N instancetNotNull<N>(N? value, Func<IElement, N?> executeInitialization, IElement? initArg)
             {
                 if (value is null) // Если не инициализированна
                 {
+                    if (initArg == null)
+                        throw new NullReferenceException("initArg for executeInitialization must not be null." +
+                        "Use changeContext() to proper value.");
+
                     value = executeInitialization(initArg); // Обратный вызов из locateTopElement / locateElementCollection
 
                     if (value is null) // Если не нашли элемент
