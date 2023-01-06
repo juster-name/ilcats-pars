@@ -14,17 +14,18 @@ namespace VladlenKazmiruk
             public IElement? CurrentElement { get; } // Nекущий dom элемент из Catch() (yield return)
 
             public IElement getTopElement(); // Top-level dom элемент для поиска <T>
+            protected IElement? locateTopElement(); // Найти и вернуть этот элемент для ленивой инициализации
         }
 
         public abstract class BaseCather<T> : ICatcher<T>
         {
             public IElement ContextElement { get => contextElement; }
-            public IElement? CurrentElement { get => currentElement; } 
+            public IElement? CurrentElement { get => currentElement;} 
 
             IElement contextElement; // Используется только в конструкторе, контекст изменить нельзя
 
             protected IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
-            protected IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
+            IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
 
             public BaseCather(IElement? contextElement) // Обяхательный родительский элемент (контекст) при инициализации
             {
@@ -35,14 +36,29 @@ namespace VladlenKazmiruk
 
                 this.contextElement = contextElement;
             }
-            abstract public IElement getTopElement();
+            public IElement getTopElement() // Проверка на NullReference
+            {
+                if (this.topElement is null) // Если не инициализированна
+                {
+                    this.topElement = this.locateTopElement();
+
+                    if (this.topElement is null) // Если не нашли элемент
+                        throw new NullReferenceException("Top-Level Dom Element was not found");
+
+                    return this.topElement;
+                }
+                return this.topElement;
+            }
+            abstract protected IElement? locateTopElement();
             abstract public IEnumerable<T> Catch();
         }
 
         public class CarsCatcher : BaseCather<Data.Car>
         {
 
-            public CarsCatcher(IElement? contextElement) : base(contextElement) {}
+            public CarsCatcher(IElement? contextElement) : base(contextElement) 
+            {
+            }
 
             public override IEnumerable<Data.Car> Catch()
             {
@@ -50,23 +66,19 @@ namespace VladlenKazmiruk
 
                 foreach (var cellEl in carCells)
                 {
-                    var car = new Data.Car();
                     var carNameEl = cellEl.QuerySelector(Selectors.carNameSelector);
-                    car.Name = carNameEl?.TextContent;
                     base.currentElement = carNameEl;
+
+                    var car = new Data.Car(){
+                        Name = carNameEl?.TextContent};
+                    
                     yield return car;
                 }
             }
 
-            public override IElement getTopElement()
+            protected override IElement? locateTopElement()
             {
-                if (base.topElement == null)
-                {
-                    // Possible Null Reference от QuerySelector не актуален - элемент всегда присутствует.
-                    base.topElement = base.ContextElement.QuerySelectorAll(Selectors.carTopLevelSelector)[0];
-                    return base.topElement;
-                }
-                return base.topElement;
+                return base.ContextElement.QuerySelector(Selectors.carTopLevelSelector);
             }
         }
 
