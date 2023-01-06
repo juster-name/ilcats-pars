@@ -26,8 +26,13 @@ namespace VladlenKazmiruk
             protected IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
             protected IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
 
-            public BaseCather(IElement contextElement) // Обяхательный родительский элемент (контекст) при инициализации
+            public BaseCather(IElement? contextElement) // Обяхательный родительский элемент (контекст) при инициализации
             {
+                if (contextElement is null)
+                {
+                    throw new NullReferenceException();
+                }
+
                 this.contextElement = contextElement;
             }
             abstract public IElement getTopElement();
@@ -37,9 +42,8 @@ namespace VladlenKazmiruk
         public class CarsCatcher : BaseCather<Data.Car>
         {
 
-            public CarsCatcher(IElement contextElement) : base(contextElement)
-            {
-            }
+            public CarsCatcher(IElement? contextElement) : base(contextElement) {}
+
             public override IEnumerable<Data.Car> Catch()
             {
                 var carCells = this.getTopElement().QuerySelectorAll(Selectors.carCellSelector);
