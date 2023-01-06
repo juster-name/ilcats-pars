@@ -12,7 +12,7 @@ namespace VladlenKazmiruk
             public IElement? CurrentElement { get; } // Текущий dom элемент из Catch() (yield return)
             public IHtmlCollection<IElement> getElementCollection(); // Все элементы из topElement
 
-            public void changeContext(IElement? context); 
+            public void changeContext(IElement? context);
         }
 
         // Поиск и парсинг элементов по Context -> TopElement -> CurrentElement -> data object
@@ -22,17 +22,17 @@ namespace VladlenKazmiruk
             // что они должны использоваться при поиске.
             // Использование по типу методов обратного вызова в getTopElement и GetElementCollection.
 
-             // Поиск родителя с элементами из контекста.
+             // Поиск родителя с множеством элементов из контекста. Даем доступ к contextElement
             abstract protected IElement? locateTopElement(IElement context); 
-             // Поиск конкретных элементов для парсинга
+             // Поиск конкретных элементов для парсинга. даем доступ к topElement
             abstract protected IHtmlCollection<IElement>? locateElementCollection(IElement topElement);
              // Парсинг элемента в Data объект класса <T>
             abstract protected T initDataFromElement(IElement element);
-
-            public IElement ContextElement { get => contextElement; }
+            // Текущий dom элемент из Catch() (yield return)
             public IElement? CurrentElement { get => currentElement;} 
 
-            IElement contextElement; // Не модет быть null, так как используется при поиске topElement
+            // Расширяющие классы не имеют доступа к Context и TopElement
+            IElement contextElement; // Не может быть null, так как используется при поиске topElement
             IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
             IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
             IHtmlCollection<IElement>? elementCollection = null; // Аналогично предыдущему полю
@@ -45,13 +45,8 @@ namespace VladlenKazmiruk
 
                 this.contextElement = contextElement;
             }
-
-            public IElement getTopElement() // Проверка на NullReference и инициализация по требованию
-            {
-                return this.instancetNotNull(this.topElement, this.locateTopElement, this.contextElement);
-            }
             
-            public IHtmlCollection<IElement> getElementCollection()
+            public IHtmlCollection<IElement> getElementCollection() // Проверка на NullReference и инициализация по требованию
             {
                 return this.instancetNotNull(this.elementCollection, this.locateElementCollection, this.getTopElement());
             }
@@ -64,6 +59,11 @@ namespace VladlenKazmiruk
                 }
 
                 this.contextElement = newContext;
+            }
+
+            IElement getTopElement() // Проверка на NullReference и инициализация по требованию
+            {
+                return this.instancetNotNull(this.topElement, this.locateTopElement, this.contextElement);
             }
 
             // Абстракция парсинга элемента
@@ -81,12 +81,16 @@ namespace VladlenKazmiruk
                 }
             }
 
-            // Ленивая инициализация переменной с проверкой на null
+            // Ленивая инициализация переменной с проверкой на null.
+            //
+            // Проверяем value на null
+            // берем значения для инициализации из executeInitialization
+            // передавая аргумент initArg.
             private N instancetNotNull<N>(N? value, Func<IElement, N?> executeInitialization, IElement initArg)
             {
                 if (value is null) // Если не инициализированна
                 {
-                    value = executeInitialization(initArg);
+                    value = executeInitialization(initArg); // Обратный вызов из locateTopElement / locateElementCollection
 
                     if (value is null) // Если не нашли элемент
                         throw new NullReferenceException("Element was not found. NullReference return");
@@ -102,6 +106,7 @@ namespace VladlenKazmiruk
         {
             public CarsCatcher(IElement? contextElement) : base(contextElement) 
             {
+                
             }
 
             protected override Car initDataFromElement(IElement element)
@@ -145,14 +150,14 @@ namespace VladlenKazmiruk
                     return carModel;
             }
 
-            protected override IHtmlCollection<IElement>? locateElementCollection()
+            protected override IHtmlCollection<IElement>? locateElementCollection(IElement topElement)
             {
-                return getTopElement().QuerySelectorAll(Selectors.carInfoSelector);
+                return topElement.QuerySelectorAll(Selectors.carInfoSelector);
             }
 
-            protected override IElement? locateTopElement()
+            protected override IElement? locateTopElement(IElement contextElement)
             {
-                return base.ContextElement.QuerySelector(Selectors.carInfoTopSelector);
+                return contextElement.QuerySelector(Selectors.carInfoTopSelector);
             }
         }
 #endregion
