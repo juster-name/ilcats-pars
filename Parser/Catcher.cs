@@ -19,12 +19,15 @@ namespace VladlenKazmiruk
 
         public abstract class BaseCather<T> : ICatcher<T>
         {
+            abstract protected IElement? locateTopElement(); // Поиск родителя с элементами
+            abstract protected IHtmlCollection<IElement>? locatElementCollection(); // Поиск конкретных элементов для парсинга
+            abstract protected T initDataFromElement(IElement element); // Парсинг элемента в Data объект класса <T>
+
             public IElement ContextElement { get => contextElement; }
             public IElement? CurrentElement { get => currentElement;} 
 
             IElement contextElement; // Используется только в конструкторе, контекст изменить нельзя
-
-            protected IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
+            IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
             IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
             IHtmlCollection<IElement>? elementCollection = null; // Аналогично предыдущему полю
 
@@ -63,10 +66,6 @@ namespace VladlenKazmiruk
                 }
             }
 
-            abstract protected IElement? locateTopElement(); // Поиск родителя с элементами
-            abstract protected IHtmlCollection<IElement>? locatElementCollection(); // Поиск конкретных элементов для парсинга
-            abstract protected T initDataFromElement(IElement element); // Парсинг элемента в Data объект класса <T>
-            
             // Ленивая инициализация переменной с проверкой на null
             private N initIfNotNull<N>(N? value, Func<N?> executeInitialization)
             {
@@ -86,25 +85,21 @@ namespace VladlenKazmiruk
 #region CarsCatcher
         public class CarsCatcher : BaseCather<Data.Car>
         {
-
             public CarsCatcher(IElement? contextElement) : base(contextElement) 
             {
             }
 
-            public override IEnumerable<Data.Car> Catch()
+            protected override Car initDataFromElement(IElement element)
             {
-                var carCells = this.getTopElement().QuerySelectorAll(Selectors.carCellSelector);
+                var car = new Data.Car(){
+                    Name =  element.QuerySelector(Selectors.carNameSelector)?.TextContent};
 
-                foreach (var cellEl in carCells)
-                {
-                    var carNameEl = cellEl.QuerySelector(Selectors.carNameSelector);
-                    base.currentElement = carNameEl;
+                return car;
+            }
 
-                    var car = new Data.Car(){
-                        Name = carNameEl?.TextContent};
-                    
-                    yield return car;
-                }
+            protected override IHtmlCollection<IElement>? locatElementCollection()
+            {
+                return this.getTopElement().QuerySelectorAll(Selectors.carCellSelector);
             }
 
             protected override IElement? locateTopElement()
@@ -114,5 +109,37 @@ namespace VladlenKazmiruk
         }
 #endregion
 
+#region CarModelCatcher
+        public class CarModelCatcher : BaseCather<CarModel>
+        {
+            public CarModelCatcher(IElement? contextElement) : base(contextElement)
+            {
+            }
+
+            protected override CarModel initDataFromElement(IElement element)
+            {
+                    var idEl = element.QuerySelector("a");
+
+                    var carModel = new Data.CarModel(){
+                        Url = idEl?.GetAttribute("href"),
+                        Code = idEl?.TextContent,
+                        DateRange = element.QuerySelector(Selectors.carDatesSelector)?.TextContent,
+                        ComplectationCode = element.QuerySelector(Selectors.carComplCodeSelector)?.TextContent
+                    };
+
+                    return carModel;
+            }
+
+            protected override IHtmlCollection<IElement>? locatElementCollection()
+            {
+                return getTopElement().QuerySelectorAll(Selectors.carInfoSelector);
+            }
+
+            protected override IElement? locateTopElement()
+            {
+                return base.ContextElement.QuerySelector(Selectors.carInfoTopSelector);
+            }
+        }
+#endregion
     }
 }
