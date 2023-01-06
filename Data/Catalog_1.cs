@@ -11,6 +11,7 @@ namespace VladlenKazmiruk
 
             string? name;
             Catalog_0? catalog_0;
+        }
 
     }
 }
