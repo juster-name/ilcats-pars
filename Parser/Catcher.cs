@@ -15,26 +15,32 @@ namespace VladlenKazmiruk
 
             public IElement getTopElement(); // Top-level dom элемент для поиска <T>
             public IHtmlCollection<IElement> getElementCollection(); // Все элементы из topElement
+
+            public void changeContext(IElement? context); 
         }
 
         public abstract class BaseCather<T> : ICatcher<T>
         {
-            abstract protected IElement? locateTopElement(); // Поиск родителя с элементами
-            abstract protected IHtmlCollection<IElement>? locatElementCollection(); // Поиск конкретных элементов для парсинга
-            abstract protected T initDataFromElement(IElement element); // Парсинг элемента в Data объект класса <T>
+            // Указываем context и topElement как аргументы для ясности, что они должны использоваться при поиске
+
+             // Поиск родителя с элементами из контекста.
+            abstract protected IElement? locateTopElement(IElement context); 
+             // Поиск конкретных элементов для парсинга
+            abstract protected IHtmlCollection<IElement>? locateElementCollection(IElement topElement);
+             // Парсинг элемента в Data объект класса <T>
+            abstract protected T initDataFromElement(IElement element);
 
             public IElement ContextElement { get => contextElement; }
             public IElement? CurrentElement { get => currentElement;} 
 
-            IElement contextElement; // Используется только в конструкторе, контекст изменить нельзя
+            IElement contextElement; //
             IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
             IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
             IHtmlCollection<IElement>? elementCollection = null; // Аналогично предыдущему полю
 
             public BaseCather(IElement? contextElement) // Обязательный родительский элемент (контекст) при инициализации
             {
-                if (contextElement is null)
-                {
+                if (contextElement is null){
                     throw new NullReferenceException("contextElement must not be null");
                 }
 
@@ -43,12 +49,22 @@ namespace VladlenKazmiruk
 
             public IElement getTopElement() // Проверка на NullReference и инициализация по требованию
             {
-                return this.initIfNotNull(this.topElement, this.locateTopElement);
+                return this.instancetNotNull(this.topElement, this.locateTopElement, this.contextElement);
             }
             
             public IHtmlCollection<IElement> getElementCollection()
             {
-                return this.initIfNotNull(this.elementCollection, this.locatElementCollection);
+                return this.instancetNotNull(this.elementCollection, this.locateElementCollection, this.getTopElement());
+            }
+
+            public void changeContext(IElement? newContext)
+            {
+                if (newContext is null)
+                {
+                    throw new NullReferenceException("contextElement must not be null");
+                }
+
+                this.contextElement = newContext;
             }
 
             // Абстракция парсинга элемента
@@ -67,14 +83,14 @@ namespace VladlenKazmiruk
             }
 
             // Ленивая инициализация переменной с проверкой на null
-            private N initIfNotNull<N>(N? value, Func<N?> executeInitialization)
+            private N instancetNotNull<N>(N? value, Func<IElement, N?> executeInitialization, IElement initArg)
             {
                 if (value is null) // Если не инициализированна
                 {
-                    value = executeInitialization();
+                    value = executeInitialization(initArg);
 
                     if (value is null) // Если не нашли элемент
-                        throw new NullReferenceException("Top-Level Dom Element was not found");
+                        throw new NullReferenceException("Element was not found. NullReference return");
 
                     return value;
                 }
@@ -97,7 +113,7 @@ namespace VladlenKazmiruk
                 return car;
             }
 
-            protected override IHtmlCollection<IElement>? locatElementCollection()
+            protected override IHtmlCollection<IElement>? locateElementCollection()
             {
                 return this.getTopElement().QuerySelectorAll(Selectors.carCellSelector);
             }
@@ -130,7 +146,7 @@ namespace VladlenKazmiruk
                     return carModel;
             }
 
-            protected override IHtmlCollection<IElement>? locatElementCollection()
+            protected override IHtmlCollection<IElement>? locateElementCollection()
             {
                 return getTopElement().QuerySelectorAll(Selectors.carInfoSelector);
             }
