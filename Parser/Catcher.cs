@@ -14,7 +14,6 @@ namespace VladlenKazmiruk
             public IElement? CurrentElement { get; } // Nекущий dom элемент из Catch() (yield return)
 
             public IElement getTopElement(); // Top-level dom элемент для поиска <T>
-            protected IElement? locateTopElement(); // Найти и вернуть этот элемент для ленивой инициализации
         }
 
         public abstract class BaseCather<T> : ICatcher<T>
@@ -53,6 +52,7 @@ namespace VladlenKazmiruk
             abstract public IEnumerable<T> Catch();
         }
 
+#region CarsCatcher
         public class CarsCatcher : BaseCather<Data.Car>
         {
 
@@ -81,6 +81,7 @@ namespace VladlenKazmiruk
                 return base.ContextElement.QuerySelector(Selectors.carTopLevelSelector);
             }
         }
+#endregion
 
     }
 }
