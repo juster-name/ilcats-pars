@@ -1,6 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using AngleSharp;
 using System.Collections.Concurrent;
+using VladlenKazmiruk.Parser;
+
 using MySql = MySqlConnector;
 using Csl = System.Console;
 
