@@ -85,7 +85,7 @@ namespace VladlenKazmiruk
             //
             // Проверяем value на null
             // берем значения для инициализации из executeInitialization
-            // передавая аргумент initArg.
+            // передавая аргумент initArg, после его проверки на null.
             private N instancetNotNull<N>(N? value, Func<IElement, N?> executeInitialization, IElement? initArg)
             {
                 if (value is null) // Если не инициализированна
