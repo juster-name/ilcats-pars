@@ -15,7 +15,12 @@ namespace VladlenKazmiruk
         {
             foreach (var car in Test.getCars())
             {
-                Csl.WriteLine($"\t{car.Name}");
+                Csl.WriteLine($"\t\n{car.Name}");
+                foreach (Data.CarModel carModel in car.Models)
+                {
+                    //Csl.WriteLine($"\t{carModel.Url}");
+                    Csl.WriteLine($"\t{carModel.Code} | {carModel.DateRange} | {carModel.ComplectationCode}");
+                }
             }
         }
     }
@@ -30,11 +35,23 @@ namespace VladlenKazmiruk
             var document = context.OpenAsync(address).WaitAsync(CancellationToken.None).Result;
 
             var carCatcher = new Parser.CarsCatcher(document.GetElementById("Body"));
+            var carModelCatcher = new Parser.CarModelCatcher(null);
+
+            var buffCarModels = new HashSet<Data.CarModel>();
 
             foreach (var car in carCatcher.Catch())
             {
-                Csl.WriteLine($"Current Element = {carCatcher?.CurrentElement?.OuterHtml}");
+                //Csl.WriteLine($"Current Element = {carCatcher?.CurrentElement?.OuterHtml}");
 
+                carModelCatcher.changeContext(carCatcher?.CurrentElement);
+
+                buffCarModels.Clear();
+
+                foreach (Data.CarModel carModel in carModelCatcher.Catch())
+                {
+                    buffCarModels.Add(carModel);
+                }
+                car.Models = buffCarModels;
                 yield return car;
             }
         }
