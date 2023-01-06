@@ -8,20 +8,19 @@ namespace VladlenKazmiruk
         // Интерфейс для получения Data класса <T>
         interface ICatcher<T>
         {
-            public IEnumerable<T> Catch(); // Поиск и получения Data класса <T> по элементу
-
-            public IElement ContextElement { get; } // Родительский dom элемент для осуществления поиска
+            public IEnumerable<T> Catch(); // Поиск и получение data object <T> по элементу
             public IElement? CurrentElement { get; } // Текущий dom элемент из Catch() (yield return)
-
-            public IElement getTopElement(); // Top-level dom элемент для поиска <T>
             public IHtmlCollection<IElement> getElementCollection(); // Все элементы из topElement
 
             public void changeContext(IElement? context); 
         }
 
+        // Поиск и парсинг элементов по Context -> TopElement -> CurrentElement -> data object
         public abstract class BaseCather<T> : ICatcher<T>
         {
-            // Указываем context и topElement как аргументы для ясности, что они должны использоваться при поиске
+            // Указываем context и topElement как аргументы для ясности, 
+            // что они должны использоваться при поиске.
+            // Использование по типу методов обратного вызова в getTopElement и GetElementCollection.
 
              // Поиск родителя с элементами из контекста.
             abstract protected IElement? locateTopElement(IElement context); 
@@ -33,7 +32,7 @@ namespace VladlenKazmiruk
             public IElement ContextElement { get => contextElement; }
             public IElement? CurrentElement { get => currentElement;} 
 
-            IElement contextElement; //
+            IElement contextElement; // Не модет быть null, так как используется при поиске topElement
             IElement? currentElement = null; // Присваиваем значение во время работы метода Catch()
             IElement? topElement = null; // Ленивая инициализация из метода getTopElement() либо Catch()
             IHtmlCollection<IElement>? elementCollection = null; // Аналогично предыдущему полю
@@ -113,14 +112,14 @@ namespace VladlenKazmiruk
                 return car;
             }
 
-            protected override IHtmlCollection<IElement>? locateElementCollection()
+            protected override IHtmlCollection<IElement>? locateElementCollection(IElement topElement)
             {
-                return this.getTopElement().QuerySelectorAll(Selectors.carCellSelector);
+                return topElement.QuerySelectorAll(Selectors.carCellSelector);
             }
 
-            protected override IElement? locateTopElement()
+            protected override IElement? locateTopElement(IElement context)
             {
-                return base.ContextElement.QuerySelector(Selectors.carTopLevelSelector);
+                return context.QuerySelector(Selectors.carTopLevelSelector);
             }
         }
 #endregion
