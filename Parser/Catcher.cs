@@ -18,12 +18,14 @@ namespace VladlenKazmiruk
         // Поиск и парсинг элементов по Context -> TopElement -> CurrentElement -> data object
         public abstract class BaseCather<T> : ICatcher<T>
         {
+            public event Action<T>? OnCatch;
+
             // Указываем context и topElement как аргументы для ясности, 
             // что они должны использоваться при поиске.
             // Использование по типу методов обратного вызова в getTopElement и GetElementCollection.
 
              // Поиск родителя с множеством элементов из контекста. Даем доступ к contextElement
-            abstract protected IElement? locateTopElement(IElement context); 
+            abstract protected IElement? locateTopElement(IElement contextElement); 
              // Поиск конкретных элементов для парсинга. даем доступ к topElement
             abstract protected IHtmlCollection<IElement>? locateElementCollection(IElement topElement);
              // Парсинг элемента в Data объект класса <T>
@@ -76,7 +78,9 @@ namespace VladlenKazmiruk
                     this.currentElement = el;
 
                     T data = this.initDataFromElement(el);
-                    
+
+                    this.OnCatch?.Invoke(data);
+
                     yield return data;
                 }
             }
@@ -116,19 +120,19 @@ namespace VladlenKazmiruk
             protected override Car initDataFromElement(IElement element)
             {
                 var car = new Data.Car(){
-                    Name =  element.QuerySelector(Selectors.carNameSelector)?.TextContent};
+                    Name =  element.QuerySelector(Selectors.carName)?.TextContent};
 
                 return car;
             }
 
             protected override IHtmlCollection<IElement>? locateElementCollection(IElement topElement)
             {
-                return topElement.QuerySelectorAll(Selectors.carCellSelector);
+                return topElement.QuerySelectorAll(Selectors.carCell);
             }
 
-            protected override IElement? locateTopElement(IElement context)
+            protected override IElement? locateTopElement(IElement contextElement)
             {
-                return context.QuerySelector(Selectors.carTopLevelSelector);
+                return contextElement.QuerySelector(Selectors.carTopLevel);
             }
         }
 #endregion
@@ -142,13 +146,12 @@ namespace VladlenKazmiruk
 
             protected override CarModel initDataFromElement(IElement element)
             {
-                    var idEl = element.QuerySelector("a");
+                    //var idEl = element.QuerySelector("a");
 
                     var carModel = new Data.CarModel(){
-                        Url = idEl?.GetAttribute("href"),
-                        Code = idEl?.TextContent,
-                        DateRange = element.QuerySelector(Selectors.carDatesSelector)?.TextContent,
-                        ComplectationCode = element.QuerySelector(Selectors.carComplCodeSelector)?.TextContent
+                        Code = element.QuerySelector(Selectors.code)?.TextContent,
+                        DateRange = element.QuerySelector(Selectors.carModelDates)?.TextContent,
+                        ComplectationCode = element.QuerySelector(Selectors.carModelComplCode)?.TextContent
                     };
 
                     return carModel;
@@ -156,12 +159,58 @@ namespace VladlenKazmiruk
 
             protected override IHtmlCollection<IElement>? locateElementCollection(IElement topElement)
             {
-                return topElement.QuerySelectorAll(Selectors.carInfoSelector);
+                return topElement.QuerySelectorAll(Selectors.carModel);
             }
 
             protected override IElement? locateTopElement(IElement contextElement)
             {
-                return contextElement.QuerySelector(Selectors.carInfoTopSelector);
+                return contextElement.QuerySelector(Selectors.carModelTop);
+            }
+        }
+#endregion
+
+#region ComplCatcher
+        public class ComplCatcher : BaseCather<Data.Complectation>
+        {
+            List<string> dataTypes = new List<string>();
+
+            public ComplCatcher(IElement? contextElement) : base(contextElement)
+            {
+            }
+
+            protected override Complectation initDataFromElement(IElement element)
+            {
+                var compl = new Data.Complectation(){
+                    Code = element.QuerySelector("a")?.TextContent,
+                    DateRange = element.QuerySelector(Selectors.dateRange)?.TextContent
+                };
+                var datas = element.QuerySelectorAll(Selectors.complDataNames);
+                var sels =  datas.Select(el => el.TextContent);
+
+                var dataValues = element.QuerySelectorAll(Selectors.complDataValues)
+                    .Select(el => el.TextContent).ToList();
+
+                var dict = this.dataTypes.Select((k, i) => new { k, v = i < dataValues.Count ? dataValues[i] : ""})
+                    .ToDictionary(x => x.k, x => x.v);
+
+                compl.Data = dict;
+                
+                return compl;
+                
+            }
+
+            protected override IHtmlCollection<IElement>? locateElementCollection(IElement topElement)
+            {
+                dataTypes = topElement.QuerySelectorAll("tr:nth-child(1)")[0].
+                    QuerySelectorAll(Selectors.complDataNames).
+                    Select(el =>  el.TextContent).ToList();
+
+                return topElement.QuerySelectorAll(Selectors.complCell);
+            }
+
+            protected override IElement? locateTopElement(IElement contextElement)
+            {
+                return contextElement.QuerySelector(Selectors.complTop);
             }
         }
 #endregion
