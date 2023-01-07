@@ -17,7 +17,7 @@ namespace VladlenKazmiruk
             {
                 var strW = new StringWriter();
 
-                strW.WriteLine($"{this.Name}");
+                strW.WriteLine($"Car Name: {this.Name}");
                  foreach (Data.CarModel carModel in this.Models)
                  {
                      strW.WriteLine($"\t{carModel.ToString()}");
