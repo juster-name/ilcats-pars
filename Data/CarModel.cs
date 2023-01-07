@@ -11,22 +11,24 @@ namespace VladlenKazmiruk
             public string? Code { get => code; set => code = value; }
             public IEnumerable<Complectation> Complectations { get => complectations; set => complectations = value; }
             public Car? Car { get => car; set => car = value; }
+            public string? Url { get => url; set => url = value; }
 
             string? code = null;
             string? dateRange = null;
             string? complectationCode = null;
             IEnumerable<Complectation> complectations = Enumerable.Empty<Complectation>();
             Car? car;
+            string? url = null;
 
             public override string ToString()
             {
                 var strW = new StringWriter();
-
-                  strW.WriteLine($"{this.Code} | {this.DateRange} | {this.ComplectationCode}");
-                  strW.WriteLine("Complectations:");
+                  strW.WriteLine(this.Url);
+                  strW.WriteLine($"Model Code: {this.Code} | Date: {this.DateRange} | {this.ComplectationCode}");
+                  strW.WriteLine("\tComplectations:");
                   foreach (var compl in this.complectations)
                   {
-                    strW.WriteLine(compl.ToString());
+                    strW.WriteLine("\t\t" + compl.ToString());
                   }
 
                   return strW.ToString();
