@@ -13,13 +13,11 @@ namespace VladlenKazmiruk
 
         public static void Main(string[] args)
         {
-            foreach (var car in Test.getCars())
+            using (StreamWriter fileW = File.AppendText("carData.txt"))
             {
-                Csl.WriteLine($"\t\n{car.Name}");
-                foreach (Data.CarModel carModel in car.Models)
+                foreach (var car in Test.getCars())
                 {
-                    //Csl.WriteLine($"\t{carModel.Url}");
-                    Csl.WriteLine($"\t{carModel.Code} | {carModel.DateRange} | {carModel.ComplectationCode}");
+                    fileW.WriteLine(car.ToString());
                 }
             }
         }
@@ -30,27 +28,43 @@ namespace VladlenKazmiruk
         public static IEnumerable<Data.Car> getCars()
         {
             var config = Configuration.Default.WithDefaultLoader();
-            var address = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
+            var carsAddress = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
             var context = BrowsingContext.New(config);
-            var document = context.OpenAsync(address).WaitAsync(CancellationToken.None).Result;
+            var document = context.OpenAsync(carsAddress).WaitAsync(CancellationToken.None).Result;
+
 
             var carCatcher = new Parser.CarsCatcher(document.GetElementById("Body"));
             var carModelCatcher = new Parser.CarModelCatcher(null);
+            var complCatcher = new Parser.ComplCatcher(null);
 
             var buffCarModels = new HashSet<Data.CarModel>();
+            var buffCompls = new HashSet<Data.Complectation>();
 
             foreach (var car in carCatcher.Catch())
             {
-                //Csl.WriteLine($"Current Element = {carCatcher?.CurrentElement?.OuterHtml}");
-
                 carModelCatcher.changeContext(carCatcher?.CurrentElement);
 
                 buffCarModels.Clear();
 
                 foreach (Data.CarModel carModel in carModelCatcher.Catch())
                 {
+                    carModel.Car = car;
+                    var newUrl = "https://www.ilcats.ru" + carModel.Url;
+
+                    var docCompl = context.OpenAsync(newUrl).WaitAsync(CancellationToken.None).Result;
+                    var el = docCompl.GetElementById("Body");
+                    complCatcher.changeContext(el);
+
+                    foreach(Data.Complectation compl in complCatcher.Catch())
+                    {
+                        compl.CarModel = carModel;
+                        buffCompls.Add(compl);
+                    }
+                    carModel.Complectations = buffCompls;
                     buffCarModels.Add(carModel);
+                    
                 }
+                
                 car.Models = buffCarModels;
                 yield return car;
             }
