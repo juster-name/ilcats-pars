@@ -151,7 +151,8 @@ namespace VladlenKazmiruk
                     var carModel = new Data.CarModel(){
                         Code = element.QuerySelector(Selectors.code)?.TextContent,
                         DateRange = element.QuerySelector(Selectors.carModelDates)?.TextContent,
-                        ComplectationCode = element.QuerySelector(Selectors.carModelComplCode)?.TextContent
+                        ComplectationCode = element.QuerySelector(Selectors.carModelComplCode)?.TextContent,
+                        Url = element.QuerySelector("a")?.GetAttribute("href")
                     };
 
                     return carModel;
@@ -182,7 +183,8 @@ namespace VladlenKazmiruk
             {
                 var compl = new Data.Complectation(){
                     Code = element.QuerySelector("a")?.TextContent,
-                    DateRange = element.QuerySelector(Selectors.dateRange)?.TextContent
+                    DateRange = element.QuerySelector(Selectors.dateRange)?.TextContent,
+                    Url = element.QuerySelector("a")?.GetAttribute("href")
                 };
                 var datas = element.QuerySelectorAll(Selectors.complDataNames);
                 var sels =  datas.Select(el => el.TextContent);
@@ -190,10 +192,13 @@ namespace VladlenKazmiruk
                 var dataValues = element.QuerySelectorAll(Selectors.complDataValues)
                     .Select(el => el.TextContent).ToList();
 
-                var dict = this.dataTypes.Select((k, i) => new { k, v = i < dataValues.Count ? dataValues[i] : ""})
-                    .ToDictionary(x => x.k, x => x.v);
+                this.dataTypes = this.dataTypes.Distinct().ToList();
+                //var dict = this.dataTypes.Select((k, i) => new { k, v = i < dataValues.Count ? dataValues[i] : ""})
+                //    .ToDictionary(x => x.k, x => x.v);
 
-                compl.Data = dict;
+                compl.Data = this.dataTypes.Zip(dataValues, 
+                    (v1, v2) => new KeyValuePair<string,string>(v1, v2))
+                    .ToList();
                 
                 return compl;
                 
