@@ -7,26 +7,30 @@ namespace VladlenKazmiruk
     {
         public class Complectation
         {
-            public string? Body { get => body; set => body = value; }
-            public string? Grade { get => grade; set => grade = value; }
-            public string? Atm_mtm { get => atm_mtm; set => atm_mtm = value; }
-            public string? Gear_shift_type { get => gear_shift_type; set => gear_shift_type = value; }
-            public string? Driver_position { get => driver_position; set => driver_position = value; }
-            public string? Doors_number { get => doors_number; set => doors_number = value; }
-            public string? Destination1 { get => destination1; set => destination1 = value; }
-            public string? Destination2 { get => destination2; set => destination2 = value; }
-            public CarModel? CarModel { get => carModel; set => carModel = value; }
 
-            string? body;
-            string? grade;
-            string? atm_mtm;
-            string? gear_shift_type;
-            string? driver_position;
-            string? doors_number;
-            string? destination1;
-            string? destination2;
+            public CarModel? CarModel { get => carModel; set => carModel = value; }
+            public string? DateRange { get => dateRange; set => dateRange = value; }
+            public string? Code { get => code; set => code = value; }
+            public Dictionary<string, string> Data { get => data; set => data = value; }
+
+            string? code;
+            string? dateRange;
+            Dictionary<string, string> data = new Dictionary<string, string>();
 
             CarModel? carModel;
+
+            public override string ToString()
+            {
+                var strW = new StringWriter();
+
+                strW.WriteLine($"Code: {this.Code}, Date: {this.DateRange}");
+                strW.WriteLine("Data:");
+                foreach (var item in this.Data)
+                {
+                    strW.WriteLine($"\tkey = {item.Key} | Value = {item.Value}");
+                }
+                return strW.ToString();
+            }
         }
     }
 }
