@@ -199,14 +199,15 @@ namespace VladlenKazmiruk
                 compl.Data = this.dataTypes.Zip(dataValues, 
                     (v1, v2) => new KeyValuePair<string,string>(v1, v2))
                     .ToList();
-                
+                dataValues.Clear();
                 return compl;
                 
             }
 
             protected override IHtmlCollection<IElement>? locateElementCollection(IElement topElement)
             {
-                dataTypes = topElement.QuerySelectorAll("tr:nth-child(1)")[0].
+                this.dataTypes.Clear();
+                this.dataTypes = topElement.QuerySelectorAll("tr:nth-child(1)")[0].
                     QuerySelectorAll(Selectors.complDataNames).
                     Select(el =>  el.TextContent).ToList();
 
