@@ -60,7 +60,7 @@ namespace VladlenKazmiruk
 
                 var dateStart = DateOnly.MinValue;
                 var dateEnd = DateOnly.MinValue;
-                var splitDates = dateRange.Split(separator: " - ");
+                var splitDates = dateRange.Split(separator: "-");
 
                 DateOnly.TryParse(splitDates[0], out dateStart);
 
