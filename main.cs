@@ -13,68 +13,25 @@ namespace VladlenKazmiruk
 
         public static void Main(string[] args)
         {
-            var dbConnection = Test.SqlConnectOpen();
-            var transaction = dbConnection.BeginTransaction();
-            var command = new MySql.MySqlCommand(dbConnection, transaction);
-
-
-            dbConnection.Close();
-            using (StreamWriter fileW = File.AppendText("carData.txt"))
+            var date = Urls.parseDateRangeToArgs("08.1983 - 03.1989");
+            using (var connection = Test.SqlConnectOpen())
             {
                 foreach (var car in Test.getCars())
                 {
-                    try
-                    {
-                        command.CommandText = $"INSERT INTO Car(name) VALUES('{car.Name}')";
-                        command.ExecuteNonQuery();
-                        
-                        foreach (var carModel in car.Models)
-                        {
-                        command.CommandText = 
-                        "INSERT INTO Model(code, date_prod_range, complectations, car_id)" +
-                         $"VALUES('{carModel.Code}', '{carModel.DateRange}', '{carModel.ComplectationCode}'," +
-                         $"(SELECT id FROM Car WHERE name='{car.Name}'))";
-                        command.ExecuteNonQuery();
-
-                            foreach (var compl in carModel.Complectations)
-                            {
-                                command.CommandText = 
-                                "INSERT INTO Complectations(date_prod_range, code, model_id" +
-                                $"VALUES('{compl.DateRange}', '{compl.Code}'," +
-                                $"(SELECT id FROM Model WHERE code='{carModel.Code}'))";
-                                command.ExecuteNonQuery();
-
-                                foreach (var data in compl.Data)
-                                {
-                                    command.CommandText =  
-                                    "INSERT INTO ComplectationData(data_name, data_value, complectation_id)" +
-                                    $"VALUES('{data.Key}', '{data.Value}'," +
-                                    $"(SELECT id FROM Complectations WHERE code='{compl.Code}'))";
-                                    command.ExecuteNonQuery();
-                                }
-                            }
-                        }
-
-                    transaction.Commit();
-                    }
-                    catch (Exception e)
-                    {
-                        Csl.WriteLine(e.Message);
-                        transaction.Rollback();
-                    }
-                    //fileW.WriteLine(car.ToString());
+                    Test.InsertIntoDb(connection, car);
                 }
+                connection.Close();
             }
         }
     }
-
+    
     public static class Test
     {
         public static IEnumerable<Data.Car> getCars()
         {
             var config = Configuration.Default.WithDefaultLoader();
             var carsAddress = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
-            
+
             var context = BrowsingContext.New(config);
             var document = context.OpenAsync(carsAddress).WaitAsync(CancellationToken.None).Result;
 
@@ -95,22 +52,23 @@ namespace VladlenKazmiruk
                 foreach (Data.CarModel carModel in carModelCatcher.Catch())
                 {
                     carModel.Car = car;
-                    var newUrl = "https://www.ilcats.ru" + carModel.Url;
+                    var newUrl = Urls.formComplectationUrl("toyota", "EU", carModel.Code, carModel.DateRange); 
+                    //"https://www.ilcats.ru" + carModel.Url;
 
                     var docCompl = context.OpenAsync(newUrl).WaitAsync(CancellationToken.None).Result;
                     var el = docCompl.GetElementById("Body");
                     complCatcher.changeContext(el);
 
-                    foreach(Data.Complectation compl in complCatcher.Catch())
+                    foreach (Data.Complectation compl in complCatcher.Catch())
                     {
                         compl.CarModel = carModel;
                         buffCompls.Add(compl);
                     }
                     carModel.Complectations = buffCompls;
                     buffCarModels.Add(carModel);
-                    
+
                 }
-                
+
                 car.Models = buffCarModels;
                 yield return car;
             }
@@ -136,5 +94,59 @@ namespace VladlenKazmiruk
 
             return dbConnection;
         }
+
+        public static void InsertIntoDb(MySql.MySqlConnection connection, Data.Car car)
+        {
+            var transaction = connection.BeginTransaction();
+            var command = new MySql.MySqlCommand(connection, transaction);
+
+            using (StreamWriter fileW = File.AppendText("carData.txt"))
+            {
+                try
+                {
+                    command.CommandText = $"INSERT INTO Car(name) VALUES('{car.Name}')";
+                    command.ExecuteNonQuery();
+
+                    foreach (var carModel in car.Models)
+                    {
+                        command.CommandText =
+                        "INSERT INTO Model(code, date_prod_range, complectations, car_id)" +
+                         $"VALUES('{carModel.Code}', '{carModel.DateRange}', '{carModel.ComplectationCode}'," +
+                         $"(SELECT id FROM Car WHERE name='{car.Name}'))";
+                        command.ExecuteNonQuery();
+
+                        foreach (var compl in carModel.Complectations)
+                        {
+                            command.CommandText =
+                            "INSERT INTO Complectation(date_prod_range, code, model_id)" +
+                            $"VALUES('{compl.DateRange}', '{compl.Code}'," +
+                            $"(SELECT id FROM Model WHERE code='{carModel.Code}'))";
+                            command.ExecuteNonQuery();
+
+                            foreach (var data in compl.Data)
+                            {
+                                command.CommandText =
+                                "INSERT INTO ComplectationData(data_name, data_value, complectation_id)" +
+                                $"VALUES('{data.Key}', '{data.Value}'," +
+                                $"(SELECT id FROM Complectation "+
+                                $"WHERE code='{compl.Code}' AND date_prod_range='{compl.DateRange}'))";
+                                command.ExecuteNonQuery();
+                            }
+                        }
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    Csl.WriteLine(e.Message);
+                    transaction.Rollback();
+                }
+                //fileW.WriteLine(car.ToString());
+
+            }
+        }
     }
+
+
 }
