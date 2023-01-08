@@ -26,7 +26,7 @@ namespace VladlenKazmiruk
                 var strW = new StringWriter();
 
                 strW.WriteLine($"Code: {this.Code} | Date: {this.DateRange}");
-                strW.WriteLine("Data:");
+                strW.WriteLine($"Data:");
                 foreach (var item in this.Data)
                 {
                     strW.WriteLine($"\tkey = {item.Key}: {item.Value}");

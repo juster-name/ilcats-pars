@@ -23,12 +23,12 @@ namespace VladlenKazmiruk
             public override string ToString()
             {
                 var strW = new StringWriter();
-                  strW.WriteLine(this.Url);
                   strW.WriteLine($"Model Code: {this.Code} | Date: {this.DateRange} | {this.ComplectationCode}");
-                  strW.WriteLine("\tComplectations:");
+                  strW.WriteLine($"{this.Url}");
+                  strW.WriteLine($"Complectations:");
                   foreach (var compl in this.complectations)
                   {
-                    strW.WriteLine("\t\t" + compl.ToString());
+                    strW.WriteLine($"\t{compl.ToString()}");
                   }
 
                   return strW.ToString();
