@@ -69,9 +69,9 @@ namespace VladlenKazmiruk
                 compl.CarModel = carModel;
                 buffCompls.Add(compl);
             }
-            carModel.Complectations = buffCompls;
+            carModel.Complectation = buffCompls;
 
-            return carModel.Complectations;
+            return carModel.Complectation;
         }
     }
 }
