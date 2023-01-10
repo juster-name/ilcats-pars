@@ -16,7 +16,7 @@ namespace VladlenKazmiruk
             public static string carModelTop = ":scope > div[class='List ']"; // : scope для carCell
             public static string carModel =  "div[class='List']";
             public static string carModelDates = "div[class='dateRange']";
-            public static string carModelComplCode = "div[class='modelCode']";
+            public static string carModelCode = "div[class='modelCode']";
             
             public static string complTop = "tbody";
             public static string complCell = "tr:nth-child(n+2)";

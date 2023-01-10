@@ -10,11 +10,12 @@ namespace VladlenKazmiruk
 
             public CarModel? CarModel { get => carModel; set => carModel = value; }
             public string? DateRange { get => dateRange; set => dateRange = value; }
-            public string? Code { get => code; set => code = value; }
-            public List<KeyValuePair<string, string>>Data { get => data; set => data = value; }
+            public string? ModCode { get => modCode; set => modCode = value; }
+            // Modifications
+            public List<KeyValuePair<string, string>> ModData { get => data; set => data = value; }
             public string? Url { get => url; set => url = value; }
 
-            string? code;
+            string? modCode;
             string? dateRange;
             // Dictionary не используем так как key может повторяться
             List<KeyValuePair<string, string>> data = new List<KeyValuePair<string, string>> ();
@@ -25,9 +26,9 @@ namespace VladlenKazmiruk
             {
                 var strW = new StringWriter();
 
-                strW.WriteLine($"Code: {this.Code} | Date: {this.DateRange}");
+                strW.WriteLine($"Mod Code: {this.ModCode} | Date: {this.DateRange}");
                 strW.WriteLine($"Data:");
-                foreach (var item in this.Data)
+                foreach (var item in this.ModData)
                 {
                     strW.WriteLine($"\tkey = {item.Key}: {item.Value}");
                 }

@@ -9,7 +9,7 @@ namespace VladlenKazmiruk
             public string? DateRange { get => dateRange; set => dateRange = value; }
             public string? ComplectationCode { get => complectationCode; set => complectationCode = value; }
             public string? Code { get => code; set => code = value; }
-            public IEnumerable<Complectation> Complectations { get => complectations; set => complectations = value; }
+            public IEnumerable<Complectation> Complectation { get => complectation; set => complectation = value; }
             public Car? Car { get => car; set => car = value; }
             public string? Url { get => url; set => url = value; }
             public string? Name { get => name; set => name = value; }
@@ -18,17 +18,17 @@ namespace VladlenKazmiruk
             string? name = null;
             string? dateRange = null;
             string? complectationCode = null;
-            IEnumerable<Complectation> complectations = Enumerable.Empty<Complectation>();
+            IEnumerable<Complectation> complectation = Enumerable.Empty<Complectation>();
             Car? car;
             string? url = null;
 
             public override string ToString()
             {
                 var strW = new StringWriter();
-                  strW.WriteLine($"Model Code: {this.Code} | Date: {this.DateRange} | {this.ComplectationCode}");
+                  strW.WriteLine($"Code: {this.ComplectationCode} | Date: {this.DateRange} | Model Code: {this.Code}");
                   strW.WriteLine($"{this.Url}");
-                  strW.WriteLine($"Complectations:");
-                  foreach (var compl in this.complectations)
+                  strW.WriteLine($"Modifications:");
+                  foreach (var compl in this.complectation)
                   {
                     strW.WriteLine($"\t{compl.ToString()}");
                   }

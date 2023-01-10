@@ -110,10 +110,6 @@ namespace VladlenKazmiruk
             }
         }
 
-#region MarketCatcher
-    //public class MarketCatcher : BaseCather
-#endregion
-
 #region CarModelNameCatcher
         public class CarModelNameCatcher : BaseCather<string>
         {
@@ -155,12 +151,10 @@ namespace VladlenKazmiruk
 
             protected override CarModel initDataFromElement(IElement element)
             {
-                    //var idEl = element.QuerySelector("a");
-
                     var carModel = new Data.CarModel(){
-                        Code = element.QuerySelector(Selectors.code)?.TextContent,
+                        ComplectationCode = element.QuerySelector(Selectors.code)?.TextContent,
                         DateRange = element.QuerySelector(Selectors.carModelDates)?.TextContent,
-                        ComplectationCode = element.QuerySelector(Selectors.carModelComplCode)?.TextContent,
+                        Code = element.QuerySelector(Selectors.carModelCode)?.TextContent,
                         Url = element.QuerySelector("a")?.GetAttribute("href")
                     };
 
@@ -191,7 +185,7 @@ namespace VladlenKazmiruk
             protected override Complectation initDataFromElement(IElement element)
             {
                 var compl = new Data.Complectation(){
-                    Code = element.QuerySelector("a")?.TextContent,
+                    ModCode = element.QuerySelector(Selectors.code)?.TextContent,
                     DateRange = element.QuerySelector(Selectors.dateRange)?.TextContent,
                     Url = element.QuerySelector("a")?.GetAttribute("href")
                 };
@@ -202,10 +196,8 @@ namespace VladlenKazmiruk
                     .Select(el => el.TextContent).ToList();
 
                 this.dataTypes = this.dataTypes.Distinct().ToList();
-                //var dict = this.dataTypes.Select((k, i) => new { k, v = i < dataValues.Count ? dataValues[i] : ""})
-                //    .ToDictionary(x => x.k, x => x.v);
 
-                compl.Data = this.dataTypes.Zip(dataValues, 
+                compl.ModData = this.dataTypes.Zip(dataValues, 
                     (v1, v2) => new KeyValuePair<string,string>(v1, v2))
                     .ToList();
                 dataValues.Clear();
