@@ -12,8 +12,10 @@ namespace VladlenKazmiruk
             public IEnumerable<Complectation> Complectations { get => complectations; set => complectations = value; }
             public Car? Car { get => car; set => car = value; }
             public string? Url { get => url; set => url = value; }
+            public string? Name { get => name; set => name = value; }
 
             string? code = null;
+            string? name = null;
             string? dateRange = null;
             string? complectationCode = null;
             IEnumerable<Complectation> complectations = Enumerable.Empty<Complectation>();
