@@ -13,17 +13,17 @@ namespace VladlenKazmiruk
         {
             string mysqlConnectionString = System.IO.File.ReadAllText("db-string.user");
 
-            Console.WriteLine("\nCreating database connection...");
+            log("\nCreating database connection...");
             TestSql.dbConnection = new MySql.MySqlConnection(mysqlConnectionString);
 
-            Console.WriteLine("Opening database connection...");
+            log("Opening database connection...");
             TestSql.dbConnection.Open();
 
-            Console.Write("\nPing ... ");
+            log("\nPing ... ");
             if (TestSql.dbConnection.Ping())
                 Console.Write("Successful.\n");
             else
-                Console.Write("Denied.\n");
+                log("Denied.\n");
 
             return TestSql.dbConnection;
         }
@@ -39,12 +39,12 @@ namespace VladlenKazmiruk
 
         public static void InsertIntoDb(MySql.MySqlConnection connection, Data.CarModel carModel)
         {
-            Console.WriteLine("Beginning database transaction.");
+            log("Beginning database transaction.");
             var transaction = connection.BeginTransaction();
 
             var modelComplsOrEmpty = Enumerable.Empty<Data.Complectation>();
             if (carModel.Complectation == null)
-                Console.WriteLine($"No Conplectation found in {carModel.Name}");
+                log($"No Conplectation found in {carModel.Name}");
             else
                 modelComplsOrEmpty = carModel.Complectation;
 
@@ -62,18 +62,24 @@ namespace VladlenKazmiruk
                         logInsert (executeValueInsert(data.Value, transaction), "ValueInsert");
                         logInsert (executeDataPairInsert(transaction), "DataPairInsert");
                         logInsert (executeModificationInsert(compl, transaction), "ModificationInsert");
+                        logInsert (executeDataPairModIdInsert(transaction), "DataPairModIdInsert");
                     }
                 }
-                Console.WriteLine("Commiting transaction.");
+                log("Commiting transaction.");
                 transaction.Commit();
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                 Console.WriteLine("Rolling back");
+                log(e.Message);
+                 log("Rolling back");
                 transaction.Rollback();
             }
-            Console.WriteLine("Transaction commited successfully.");
+            log("Transaction commited successfully.");
+        }
+
+        static public void log(string arg)
+        {
+            log(DateTime.Now.ToLocalTime() + arg);
         }
 
         static void logInsert(int rows, string name)
@@ -155,7 +161,7 @@ namespace VladlenKazmiruk
             return command("mod", transaction).ExecuteNonQuery();
         }
 
-        static int executeDataPairModIdInsert(Data.Complectation compl, MySql.MySqlTransaction transaction)
+        static int executeDataPairModIdInsert(MySql.MySqlTransaction transaction)
         {
             command("dataPair", transaction).CommandText =
             "INSERT IGNORE INTO ModDataPair(modification_id)" +

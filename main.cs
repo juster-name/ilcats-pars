@@ -32,7 +32,7 @@ namespace VladlenKazmiruk
                 //     TestSql.InsertIntoDb(connection, carModel);
                 // }
                 
-                Console.WriteLine("\nClosing connection...");
+                TestSql.log("Closing connection...");
                 connection.Close();
             }
             
