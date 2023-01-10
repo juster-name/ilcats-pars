@@ -13,29 +13,33 @@ namespace VladlenKazmiruk
         {
             string mysqlConnectionString = System.IO.File.ReadAllText("db-string.user");
 
-            Console.WriteLine("\n\t Creating database connection...");
+            Console.WriteLine("\nCreating database connection...");
             TestSql.dbConnection = new MySql.MySqlConnection(mysqlConnectionString);
 
-            Console.WriteLine("\t Opening database connection...");
+            Console.WriteLine("Opening database connection...");
             TestSql.dbConnection.Open();
 
-            Console.Write("\n\t Ping ... ");
+            Console.Write("\nPing ... ");
             if (TestSql.dbConnection.Ping())
-                Console.Write("Successful");
+                Console.Write("Successful.\n");
             else
-                Console.Write("Denied");
+                Console.Write("Denied.\n");
 
             return TestSql.dbConnection;
         }
 
         static MySql.MySqlCommand command(string name, MySql.MySqlTransaction transaction)
         {
-            return commands.GetValueOrDefault(name, 
-                new MySql.MySqlCommand(TestSql.dbConnection, transaction));
+            if (commands.ContainsKey(name) == false)
+            {
+                commands[name] = new MySql.MySqlCommand(TestSql.dbConnection, transaction);
+            }
+            return commands[name];
         }
 
         public static void InsertIntoDb(MySql.MySqlConnection connection, Data.CarModel carModel)
         {
+            Console.WriteLine("Beginning database transaction.");
             var transaction = connection.BeginTransaction();
 
             var modelComplsOrEmpty = Enumerable.Empty<Data.Complectation>();
@@ -54,20 +58,32 @@ namespace VladlenKazmiruk
 
                     foreach (var data in compl.ModData)
                     {
-                        executeKeyInsert(data.Key, transaction);
-                        executeValueInsert(data.Value, transaction);
-                        executeDataPairInsert(transaction);
-                        executeModificationInsert(compl, transaction);
+                        logInsert (executeKeyInsert(data.Key, transaction), "KeyInsert");
+                        logInsert (executeValueInsert(data.Value, transaction), "ValueInsert");
+                        logInsert (executeDataPairInsert(transaction), "DataPairInsert");
+                        logInsert (executeModificationInsert(compl, transaction), "ModificationInsert");
                     }
                 }
+                Console.WriteLine("Commiting transaction.");
                 transaction.Commit();
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                 Console.WriteLine("Rolling back");
                 transaction.Rollback();
             }
-        
+            Console.WriteLine("Transaction commited successfully.");
+        }
+
+        static void logInsert(int rows, string name)
+        {
+            Console.WriteLine(DateTime.Now.ToLocalTime() + $": '{name}' executed. Rows affected: {rows}");
+        }
+
+        static void logQueryCommand(string name)
+        {
+            Console.WriteLine(DateTime.Now.ToLocalTime() + $": Querying {name} command");
         }
 
         static int executeModelInsert(Data.CarModel carModel, MySql.MySqlTransaction transaction)
@@ -84,6 +100,8 @@ namespace VladlenKazmiruk
                 $"INSERT IGNORE INTO Model(code, name, date_prod_range, complectations, car_id)" +
                     $"VALUES('{carModel.Code}','{carModel.Name}', '{carModel.DateRange}', '{carModel.ComplectationCode}'," +
                     $"(SELECT id FROM Car WHERE name='{carNameOrNull}'))";
+
+                logQueryCommand("ModelInsert");
                 return command("model", transaction).ExecuteNonQuery();
         }
 
@@ -92,8 +110,8 @@ namespace VladlenKazmiruk
             command("compl", transaction).CommandText =
                     "INSERT IGNORE INTO Complectation(date_prod_range, code, model_id)" +
                     $"VALUES('{compl.DateRange}', '{compl.CarModel?.ComplectationCode}','{command("model", transaction).LastInsertedId}')"; 
-                    //$"(SELECT id FROM Model WHERE code='{carModel.Code}')"
 
+            logQueryCommand("ComplectationInsert");
             return command("compl", transaction).ExecuteNonQuery();
         }
 
@@ -103,6 +121,7 @@ namespace VladlenKazmiruk
             "INSERT IGNORE INTO ModDataName(name)" +
             $"VALUES('{dataKey}')";
 
+            logQueryCommand("KeyInsert");
             return command("name", transaction).ExecuteNonQuery();
         }
 
@@ -112,6 +131,7 @@ namespace VladlenKazmiruk
             "INSERT IGNORE INTO ModDataValue(value)" +
             $"VALUES('{dataValue}')";
 
+            logQueryCommand("ValueInsert");
             return command("value", transaction).ExecuteNonQuery();
         }
 
@@ -121,17 +141,28 @@ namespace VladlenKazmiruk
             "INSERT IGNORE INTO ModDataPair(name_id,value_id)" +
             $"VALUES('{command("name", transaction).LastInsertedId}', '{command("value", transaction).LastInsertedId}')";
 
+            logQueryCommand("DataPairInsert");
             return command("dataPair", transaction).ExecuteNonQuery();
         }
 
         static int executeModificationInsert(Data.Complectation compl, MySql.MySqlTransaction transaction)
         {
             command("mod", transaction).CommandText =
-            "INSERT IGNORE INTO Modification(code, complectation_id, data_name_id, data_value_id)" +
-            $"VALUES('{compl.ModCode}', '{command("compl", transaction).LastInsertedId}'," + 
-            $"'{command("name", transaction).LastInsertedId}', '{command("value", transaction).LastInsertedId}')";
+            "INSERT IGNORE INTO Modification(code, complectation_id)" +
+            $"VALUES('{compl.ModCode}', '{command("compl", transaction).LastInsertedId}')";
 
+            logQueryCommand("ModificationInsert");
             return command("mod", transaction).ExecuteNonQuery();
+        }
+
+        static int executeDataPairModIdInsert(Data.Complectation compl, MySql.MySqlTransaction transaction)
+        {
+            command("dataPair", transaction).CommandText =
+            "INSERT IGNORE INTO ModDataPair(modification_id)" +
+            $"VALUES('{command("mod", transaction).LastInsertedId}')";
+
+            logQueryCommand("DataPairModIdInsert");
+            return command("dataPair", transaction).ExecuteNonQuery();
         }
     }
 }
