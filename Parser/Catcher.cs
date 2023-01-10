@@ -6,9 +6,10 @@ namespace VladlenKazmiruk
     namespace Parser
     {
         // Интерфейс для получения Data класса <T>
-        interface ICatcher<T>
+        public interface ICatcher<T>
         {
             public IEnumerable<T> Catch(); // Поиск и получение data object <T> по элементу
+            
             public IElement? CurrentElement { get; } // Текущий dom элемент из Catch() (yield return)
             public IHtmlCollection<IElement> getElementCollection(); // Все элементы из topElement
 
@@ -16,7 +17,7 @@ namespace VladlenKazmiruk
         }
 
         // Поиск и парсинг элементов по Context -> TopElement -> CurrentElement -> data object
-        public abstract class BaseCather<T> : ICatcher<T>
+        public abstract class BaseCather<T>  : ICatcher<T>
         {
             public event Action<T>? OnCatch;
 
@@ -77,7 +78,7 @@ namespace VladlenKazmiruk
                 {
                     this.currentElement = el;
 
-                    T data = this.initDataFromElement(el);
+                    var data = this.initDataFromElement(el);
 
                     this.OnCatch?.Invoke(data);
 
@@ -109,20 +110,23 @@ namespace VladlenKazmiruk
             }
         }
 
-#region CarsCatcher
-        public class CarsCatcher : BaseCather<Data.Car>
+#region MarketCatcher
+    //public class MarketCatcher : BaseCather
+#endregion
+
+#region CarModelNameCatcher
+        public class CarModelNameCatcher : BaseCather<string>
         {
-            public CarsCatcher(IElement? contextElement) : base(contextElement) 
+            public CarModelNameCatcher(IElement? contextElement) : base(contextElement) 
             {
-                
             }
 
-            protected override Car initDataFromElement(IElement element)
+            protected override string initDataFromElement(IElement element)
             {
-                var car = new Data.Car(){
-                    Name =  element.QuerySelector(Selectors.carName)?.TextContent};
-
-                return car;
+                 var name = element.QuerySelector(Selectors.carModelName)?.TextContent;
+                 if (name == null)
+                    throw new NullReferenceException();
+                 return name;
             }
 
             protected override IHtmlCollection<IElement>? locateElementCollection(IElement topElement)
@@ -132,15 +136,20 @@ namespace VladlenKazmiruk
 
             protected override IElement? locateTopElement(IElement contextElement)
             {
+                var topLevelv1 = contextElement.QuerySelector(Selectors.carTopLevel);
+
+                if (topLevelv1 is null)
+                    return contextElement.QuerySelector(Selectors.carTopLevelV2);
+
                 return contextElement.QuerySelector(Selectors.carTopLevel);
             }
         }
 #endregion
 
-#region CarModelCatcher
-        public class CarModelCatcher : BaseCather<CarModel>
+#region CarModelInfoCatcher
+        public class CarModelInfoCatcher : BaseCather<CarModel>
         {
-            public CarModelCatcher(IElement? contextElement) : base(contextElement)
+            public CarModelInfoCatcher(IElement? contextElement) : base(contextElement)
             {
             }
 
