@@ -1,152 +1,35 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using AngleSharp;
+using AngleSharp.Dom;
 using System.Collections.Concurrent;
 using VladlenKazmiruk.Parser;
 
 using MySql = MySqlConnector;
 using Csl = System.Console;
 
+// TODO: Несколько значений из Complectation subquery в insert, откуда-то дупликаты.
+// Загрузить документы для парсинга в файл, а не ддосить их сайт каждый раз.
+
 namespace VladlenKazmiruk
 {
     class CLIProgram
     {
+        public static Data.Car ToyotaEuCar = new Data.Car(){
+            Name = "toyota",
+            MarketCode = "EU",
+            Market = "Европа"
+        };
 
         public static void Main(string[] args)
         {
-            var date = Urls.parseDateRangeToArgs("08.1983 - 03.1989");
-            using (var connection = Test.SqlConnectOpen())
+            using (var connection = TestSql.SqlConnectOpen())
             {
-                foreach (var car in Test.getCars())
+                foreach (var carModel in TestParse.ParseCar(ToyotaEuCar))
                 {
-                    Test.InsertIntoDb(connection, car);
+                    TestSql.InsertIntoDb(connection, carModel);
                 }
                 connection.Close();
             }
         }
     }
-    
-    public static class Test
-    {
-        public static IEnumerable<Data.Car> getCars()
-        {
-            var config = Configuration.Default.WithDefaultLoader();
-            var carsAddress = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
-
-            var context = BrowsingContext.New(config);
-            var document = context.OpenAsync(carsAddress).WaitAsync(CancellationToken.None).Result;
-
-
-            var carCatcher = new Parser.CarsCatcher(document.GetElementById("Body"));
-            var carModelCatcher = new Parser.CarModelCatcher(null);
-            var complCatcher = new Parser.ComplCatcher(null);
-
-            var buffCarModels = new HashSet<Data.CarModel>();
-            var buffCompls = new HashSet<Data.Complectation>();
-
-            foreach (var car in carCatcher.Catch())
-            {
-                carModelCatcher.changeContext(carCatcher?.CurrentElement);
-
-                buffCarModels.Clear();
-
-                foreach (Data.CarModel carModel in carModelCatcher.Catch())
-                {
-                    carModel.Car = car;
-                    var newUrl = Urls.formComplectationUrl("toyota", "EU", carModel.Code, carModel.DateRange); 
-                    //"https://www.ilcats.ru" + carModel.Url;
-
-                    var docCompl = context.OpenAsync(newUrl).WaitAsync(CancellationToken.None).Result;
-                    var el = docCompl.GetElementById("Body");
-                    complCatcher.changeContext(el);
-
-                    foreach (Data.Complectation compl in complCatcher.Catch())
-                    {
-                        compl.CarModel = carModel;
-                        buffCompls.Add(compl);
-                    }
-                    carModel.Complectations = buffCompls;
-                    buffCarModels.Add(carModel);
-
-                }
-
-                car.Models = buffCarModels;
-                yield return car;
-            }
-        }
-
-        public static MySql.MySqlConnection SqlConnectOpen()
-        {
-            string mysqlConnectionString = System.IO.File.ReadAllText("db-string.user");
-
-            Csl.WriteLine("\n\t Creating database connection...");
-            var dbConnection = new MySql.MySqlConnection(mysqlConnectionString);
-
-            Csl.WriteLine("\t Opening database connection...");
-            dbConnection.Open();
-
-            Csl.Write("\n\t Ping ... ");
-            if (dbConnection.Ping())
-                Csl.Write("Successful");
-            else
-                Csl.Write("Denied");
-
-            Csl.WriteLine("\n\t Closing connection...");
-
-            return dbConnection;
-        }
-
-        public static void InsertIntoDb(MySql.MySqlConnection connection, Data.Car car)
-        {
-            var transaction = connection.BeginTransaction();
-            var command = new MySql.MySqlCommand(connection, transaction);
-
-            using (StreamWriter fileW = File.AppendText("carData.txt"))
-            {
-                try
-                {
-                    command.CommandText = $"INSERT INTO Car(name) VALUES('{car.Name}')";
-                    command.ExecuteNonQuery();
-
-                    foreach (var carModel in car.Models)
-                    {
-                        command.CommandText =
-                        "INSERT INTO Model(code, date_prod_range, complectations, car_id)" +
-                         $"VALUES('{carModel.Code}', '{carModel.DateRange}', '{carModel.ComplectationCode}'," +
-                         $"(SELECT id FROM Car WHERE name='{car.Name}'))";
-                        command.ExecuteNonQuery();
-
-                        foreach (var compl in carModel.Complectations)
-                        {
-                            command.CommandText =
-                            "INSERT INTO Complectation(date_prod_range, code, model_id)" +
-                            $"VALUES('{compl.DateRange}', '{compl.Code}'," +
-                            $"(SELECT id FROM Model WHERE code='{carModel.Code}'))";
-                            command.ExecuteNonQuery();
-
-                            foreach (var data in compl.Data)
-                            {
-                                command.CommandText =
-                                "INSERT INTO ComplectationData(data_name, data_value, complectation_id)" +
-                                $"VALUES('{data.Key}', '{data.Value}'," +
-                                $"(SELECT id FROM Complectation "+
-                                $"WHERE code='{compl.Code}' AND date_prod_range='{compl.DateRange}'))";
-                                command.ExecuteNonQuery();
-                            }
-                        }
-                    }
-
-                    transaction.Commit();
-                }
-                catch (Exception e)
-                {
-                    Csl.WriteLine(e.Message);
-                    transaction.Rollback();
-                }
-                //fileW.WriteLine(car.ToString());
-
-            }
-        }
-    }
-
-
 }
