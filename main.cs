@@ -22,7 +22,6 @@ namespace VladlenKazmiruk
 
         public static void Main(string[] args)
         {
-            
 
             using (var connection = TestSql.SqlConnectOpen())
             {
@@ -32,8 +31,9 @@ namespace VladlenKazmiruk
                 // {
                 //     TestSql.InsertIntoDb(connection, carModel);
                 // }
-                // Console.WriteLine("\n\t Closing connection...");
-                // connection.Close();
+                
+                Console.WriteLine("\n\t Closing connection...");
+                connection.Close();
             }
             
         }
