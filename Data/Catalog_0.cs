@@ -4,7 +4,7 @@ namespace VladlenKazmiruk
 {
     namespace Data
     {
-        public class Catalog_0 
+        public class Catalog_0
         {
             public string? Name { get => name; set => name = value; }
             //public string? Complectation_id { get => complectation_id; set => complectation_id = value; }
