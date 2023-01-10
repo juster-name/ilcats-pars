@@ -21,49 +21,70 @@ namespace VladlenKazmiruk
             else
                 Console.Write("Denied");
 
-            Console.WriteLine("\n\t Closing connection...");
-
             return dbConnection;
         }
 
         public static void InsertIntoDb(MySql.MySqlConnection connection, Data.CarModel carModel)
         {
+             string? carNameOrNull = "NULL";
+
             if (carModel == null)
                 throw new NullReferenceException("Car Model must be assigned before adding to database");
 
             var transaction = connection.BeginTransaction();
-            var command = new MySql.MySqlCommand(connection, transaction);
-
-            bool isCarNull = carModel.Car == null;
+            var commandModel = new MySql.MySqlCommand(connection, transaction);
+            var commandCompl= new MySql.MySqlCommand(connection, transaction);
+            var commandName = new MySql.MySqlCommand(connection, transaction);
+            var commandValue = new MySql.MySqlCommand(connection, transaction);
+            var commandMod = new MySql.MySqlCommand(connection, transaction);
 
             try
             {
-                command.CommandText =
+                if (carModel.Car != null && carModel.Car.Name != null)
+                    carNameOrNull = carModel.Car.Name;
+
+                commandModel.CommandText =
                 $"INSERT INTO Model(code, date_prod_range, complectations, car_id)" +
                     $"VALUES('{carModel.Code}', '{carModel.DateRange}', '{carModel.ComplectationCode}'," +
-                    $"(SELECT id FROM Car WHERE name='{carModel.Car?.Name}'))";
-                command.ExecuteNonQuery();
+                    $"(SELECT id FROM Car WHERE name='{carNameOrNull}'))";
+                commandModel.ExecuteNonQuery();
 
-                if (carModel.Complectations == null)
-                    throw new NullReferenceException("Complectations must be assigned before adding to database");
+                var modelComplsOrEmpty = Enumerable.Empty<Data.Complectation>();
 
-                foreach (var compl in carModel.Complectations)
+                if (carModel.Complectation == null)
+                    Console.WriteLine($"No Conplectation found in {carModel.Name}");
+                else
+                    modelComplsOrEmpty = carModel.Complectation;
+
+                foreach (var compl in modelComplsOrEmpty)
                 {
-                    command.CommandText =
+                    commandCompl.CommandText =
                     "INSERT INTO Complectation(date_prod_range, code, model_id)" +
-                    $"VALUES('{compl.DateRange}', '{compl.Code}'," +
-                    $"(SELECT id FROM Model WHERE code='{carModel.Code}'))";
-                    command.ExecuteNonQuery();
+                    $"VALUES('{compl.DateRange}', '{carModel.ComplectationCode}','{commandModel.LastInsertedId}')"; 
+                    //$"(SELECT id FROM Model WHERE code='{carModel.Code}')"
 
-                    foreach (var data in compl.Data)
+                    commandCompl.ExecuteNonQuery();
+
+                    foreach (var data in compl.ModData)
                     {
+
+                        commandName.CommandText =
+                        "INSERT INTO ModDataName(name)" +
+                        $"VALUES('{data.Key}')";
+
+                        commandName.ExecuteNonQuery();
                         
-                        command.CommandText =
-                        "INSERT INTO ComplectationData(data_name, data_value, complectation_id)" +
-                        $"VALUES('{data.Key}', '{data.Value}'," +
-                        $"(SELECT id FROM Complectation "+
-                        $"WHERE code='{compl.Code}' AND date_prod_range='{compl.DateRange}'))";
-                        command.ExecuteNonQuery();
+                        commandValue.CommandText =
+                        "INSERT INTO ModDataValue(value)" +
+                        $"VALUES('{data.Value}')";
+                        commandValue.ExecuteNonQuery();
+
+                        commandMod.CommandText =
+                        "INSERT INTO Modification(code, complectation_id, data_name_id, data_value_id)" +
+                        $"VALUES('{compl.ModCode}', '{commandCompl.LastInsertedId}'," + 
+                        $"'{commandName.LastInsertedId}', '{commandValue.LastInsertedId}')";
+
+                        commandMod.ExecuteNonQuery();
                     }
                 }
                 transaction.Commit();
