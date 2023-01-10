@@ -4,24 +4,34 @@ namespace VladlenKazmiruk
 {
     public static class TestSql
     {
+        static MySql.MySqlConnection dbConnection = new MySql.MySqlConnection();
+
+        static System.Collections.Generic.Dictionary<string, MySql.MySqlCommand> commands =
+            new System.Collections.Generic.Dictionary<string, MySql.MySqlCommand>();
 
         public static MySql.MySqlConnection SqlConnectOpen()
         {
             string mysqlConnectionString = System.IO.File.ReadAllText("db-string.user");
 
             Console.WriteLine("\n\t Creating database connection...");
-            var dbConnection = new MySql.MySqlConnection(mysqlConnectionString);
+            TestSql.dbConnection = new MySql.MySqlConnection(mysqlConnectionString);
 
             Console.WriteLine("\t Opening database connection...");
-            dbConnection.Open();
+            TestSql.dbConnection.Open();
 
             Console.Write("\n\t Ping ... ");
-            if (dbConnection.Ping())
+            if (TestSql.dbConnection.Ping())
                 Console.Write("Successful");
             else
                 Console.Write("Denied");
 
-            return dbConnection;
+            return TestSql.dbConnection;
+        }
+
+        static MySql.MySqlCommand command(string name, MySql.MySqlTransaction transaction)
+        {
+            return commands.GetValueOrDefault(name, 
+                new MySql.MySqlCommand(TestSql.dbConnection, transaction));
         }
 
         public static void InsertIntoDb(MySql.MySqlConnection connection, Data.CarModel carModel)
@@ -32,22 +42,17 @@ namespace VladlenKazmiruk
                 throw new NullReferenceException("Car Model must be assigned before adding to database");
 
             var transaction = connection.BeginTransaction();
-            var commandModel = new MySql.MySqlCommand(connection, transaction);
-            var commandCompl= new MySql.MySqlCommand(connection, transaction);
-            var commandName = new MySql.MySqlCommand(connection, transaction);
-            var commandValue = new MySql.MySqlCommand(connection, transaction);
-            var commandMod = new MySql.MySqlCommand(connection, transaction);
 
             try
             {
                 if (carModel.Car != null && carModel.Car.Name != null)
                     carNameOrNull = carModel.Car.Name;
 
-                commandModel.CommandText =
-                $"INSERT INTO Model(code, date_prod_range, complectations, car_id)" +
-                    $"VALUES('{carModel.Code}', '{carModel.DateRange}', '{carModel.ComplectationCode}'," +
+                command("model", transaction).CommandText =
+                $"INSERT IGNORE INTO Model(code, name, date_prod_range, complectations, car_id)" +
+                    $"VALUES('{carModel.Code}','{carModel.Name}', '{carModel.DateRange}', '{carModel.ComplectationCode}'," +
                     $"(SELECT id FROM Car WHERE name='{carNameOrNull}'))";
-                commandModel.ExecuteNonQuery();
+                command("model", transaction).ExecuteNonQuery();
 
                 var modelComplsOrEmpty = Enumerable.Empty<Data.Complectation>();
 
@@ -58,33 +63,38 @@ namespace VladlenKazmiruk
 
                 foreach (var compl in modelComplsOrEmpty)
                 {
-                    commandCompl.CommandText =
-                    "INSERT INTO Complectation(date_prod_range, code, model_id)" +
-                    $"VALUES('{compl.DateRange}', '{carModel.ComplectationCode}','{commandModel.LastInsertedId}')"; 
+                    command("compl", transaction).CommandText =
+                    "INSERT IGNORE INTO Complectation(date_prod_range, code, model_id)" +
+                    $"VALUES('{compl.DateRange}', '{carModel.ComplectationCode}','{command("model", transaction).LastInsertedId}')"; 
                     //$"(SELECT id FROM Model WHERE code='{carModel.Code}')"
 
-                    commandCompl.ExecuteNonQuery();
+                    command("compl", transaction).ExecuteNonQuery();
 
                     foreach (var data in compl.ModData)
                     {
 
-                        commandName.CommandText =
-                        "INSERT INTO ModDataName(name)" +
+                        command("name", transaction).CommandText =
+                        "INSERT IGNORE INTO ModDataName(name)" +
                         $"VALUES('{data.Key}')";
 
-                        commandName.ExecuteNonQuery();
+                        command("name", transaction).ExecuteNonQuery();
                         
-                        commandValue.CommandText =
-                        "INSERT INTO ModDataValue(value)" +
+                        command("value", transaction).CommandText =
+                        "INSERT IGNORE INTO ModDataValue(value)" +
                         $"VALUES('{data.Value}')";
-                        commandValue.ExecuteNonQuery();
 
-                        commandMod.CommandText =
-                        "INSERT INTO Modification(code, complectation_id, data_name_id, data_value_id)" +
-                        $"VALUES('{compl.ModCode}', '{commandCompl.LastInsertedId}'," + 
-                        $"'{commandName.LastInsertedId}', '{commandValue.LastInsertedId}')";
+                        command("value", transaction).ExecuteNonQuery();
 
-                        commandMod.ExecuteNonQuery();
+                        command("dataPair", transaction).CommandText =
+                        "INSERT IGNORE INTO ModDataPair(name_id,value_id)" +
+                        $"VALUES('{command("name", transaction).LastInsertedId}', '{command("value", transaction).LastInsertedId}')";
+
+                        command("mod", transaction).CommandText =
+                        "INSERT IGNORE INTO Modification(code, complectation_id, data_name_id, data_value_id)" +
+                        $"VALUES('{compl.ModCode}', '{command("compl", transaction).LastInsertedId}'," + 
+                        $"'{command("name", transaction).LastInsertedId}', '{command("value", transaction).LastInsertedId}')";
+
+                        command("mod", transaction).ExecuteNonQuery();
                     }
                 }
                 transaction.Commit();
