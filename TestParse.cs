@@ -12,7 +12,7 @@ namespace VladlenKazmiruk
     public static class TestParse
     {
         public static IConfiguration config = Configuration.Default.WithDefaultLoader();
-        public static string carsAddress = "https://www.ilcats.ru/toyota&language=ru/";
+        public static string carsAddress = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
 
         public static IBrowsingContext context = BrowsingContext.New(config);
         public static IDocument document = context.OpenAsync(carsAddress).WaitAsync(CancellationToken.None).Result;
@@ -39,7 +39,7 @@ namespace VladlenKazmiruk
 
         static IEnumerable<Data.CarModel>  parseCarModels(Data.Car car, string carModelName)
         {
-            var buffCarModels = new HashSet<Data.CarModel>();
+            car.Models  = new HashSet<Data.CarModel>();
 
             foreach (Data.CarModel carModel in TestParse.carModelCatcher.Catch())
             {
@@ -52,24 +52,21 @@ namespace VladlenKazmiruk
                 var el = docCompl.GetElementById("Body");
                 complCatcher.changeContext(el);
 
-                buffCarModels.Add(carModel);
+                ((HashSet<Data.CarModel>)car.Models).Add(carModel);
             }
-
-            car.Models = buffCarModels;
 
             return car.Models;
         }
 
         static IEnumerable<Data.Complectation> parseComplectations(Data.CarModel carModel)
         {
-            var buffCompls = new HashSet<Data.Complectation>();
+            carModel.Complectation =  new HashSet<Data.Complectation>();
 
             foreach (Data.Complectation compl in TestParse.complCatcher.Catch())
             {
                 compl.CarModel = carModel;
-                buffCompls.Add(compl);
+                ((HashSet<Data.Complectation>)carModel.Complectation).Add(compl);
             }
-            carModel.Complectation = buffCompls;
 
             return carModel.Complectation;
         }
