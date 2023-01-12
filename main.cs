@@ -25,12 +25,12 @@ namespace VladlenKazmiruk
 
             using (var connection = TestSql.SqlConnectOpen())
             {
-                TestSql.InsertIntoDb(connection, getMockData());
+                //TestSql.InsertIntoDb(connection, getMockData());
                 
-                // foreach (var carModel in TestParse.ParseCar(ToyotaEuCar))
-                // {
-                //     TestSql.InsertIntoDb(connection, carModel);
-                // }
+                 foreach (var carModel in TestParse.ParseCar(ToyotaEuCar))
+                 {
+                     TestSql.InsertIntoDb(connection, carModel);
+                 }
                 
                 TestSql.log("Closing connection...");
                 connection.Close();
@@ -46,8 +46,10 @@ namespace VladlenKazmiruk
                     ComplectationCode = "2fg 4fd f# c5# gd#",
                     Car = ToyotaEuCar,
                     Url = "/testCarModelUrl",
-                    Complectation = new List<Data.Complectation>(1)
+                    Complectation = new List<Data.Complectation>(2)
                 };
+                cm.Car = ToyotaEuCar;
+
                 ((List<Data.Complectation>)cm.Complectation).Add(new Data.Complectation(){
                     ModCode = "4F56-DFG1",
                     DateRange = "01.1990 - 01-1991",
@@ -55,6 +57,7 @@ namespace VladlenKazmiruk
                     Url = "/testComplUrl1",
                     ModData = new List<KeyValuePair<string, string>>()
                 });
+
                 ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("ENGINE 1", "2L"));
                 ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("GRADE", "STD"));
                 ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("BODY", "T1"));
@@ -67,11 +70,14 @@ namespace VladlenKazmiruk
                     Url = "/testComplUrl2",
                     ModData = new List<KeyValuePair<string, string>>()
                 });
-                ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("ENGINE 1", "2L"));
-                ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("GRADE", "DLX"));
-                ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("BODY", "T1"));
-                ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("TRANSMISSION MODEL", "G"));
-                ((List<Data.Complectation>)cm.Complectation)[0].ModData.Add(new KeyValuePair<string, string>("LOADING CAPACITY", "HLF"));
+                ((List<Data.Complectation>)cm.Complectation)[1].ModData.Add(new KeyValuePair<string, string>("ENGINE 1", "2L"));
+                ((List<Data.Complectation>)cm.Complectation)[1].ModData.Add(new KeyValuePair<string, string>("GRADE", "DLX"));
+                ((List<Data.Complectation>)cm.Complectation)[1].ModData.Add(new KeyValuePair<string, string>("BODY", "T1"));
+                ((List<Data.Complectation>)cm.Complectation)[1].ModData.Add(new KeyValuePair<string, string>("TRANSMISSION MODEL", "G"));
+                ((List<Data.Complectation>)cm.Complectation)[1].ModData.Add(new KeyValuePair<string, string>("LOADING CAPACITY", "HLF"));
+
+                ToyotaEuCar.Models = new List<Data.CarModel>();
+                ((List<Data.CarModel>)ToyotaEuCar.Models).Add(cm);
 
                 return cm;
             }
