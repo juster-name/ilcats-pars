@@ -1,9 +1,8 @@
-using AngleSharp;
-using VladlenKazmiruk;
 using System.Text.RegularExpressions;
 
 namespace VladlenKazmiruk
 {
+    // Селекторы и url/path для поиска по сайту
     namespace Parser
     {
         public static class Selectors
@@ -29,7 +28,6 @@ namespace VladlenKazmiruk
         static class Urls
         {
             public static string baseFull = "https://www.ilcats.ru";
-            //public static string toyota= "/toyota";
 
             public static string getModels = "/?function=getModels";
             public static string getCompl = "/?function=getComplectations";
@@ -42,6 +40,7 @@ namespace VladlenKazmiruk
 
             public static string languageArgRu = "$language=ru";
 
+#region Helpers
             public static string formComplectationPath(string carName, string market, string? idModel, string? dateRange)
             {
                 if (idModel is null)
@@ -93,6 +92,7 @@ namespace VladlenKazmiruk
                 return retStr + endDateArg + dateEnd.Year +
                     (dateEnd.Month < 10 ? "0" + dateEnd.Month : dateEnd.Month);; // 02.1997 - 05.1999
             }
+#endregion
         }
     }
 }

@@ -1,7 +1,5 @@
-// See https://aka.ms/new-console-template for more information
 using AngleSharp;
 using AngleSharp.Dom;
-using System.Collections.Concurrent;
 using VladlenKazmiruk.Parser;
 
 
@@ -10,6 +8,7 @@ namespace VladlenKazmiruk
     public static class TestParse
     {
         public static IConfiguration config = Configuration.Default.WithDefaultLoader();
+        // Реализован только парсинг моделей по примеру каталога моделей toyota - EU
         public static string carsAddress = "https://www.ilcats.ru/toyota/?function=getModels&market=EU";
 
         public static IBrowsingContext context = BrowsingContext.New(config);
@@ -21,6 +20,8 @@ namespace VladlenKazmiruk
         public static ICatcher<Data.Complectation> complCatcher = new Parser.ComplCatcher(null);
 
 
+        // Используем класс Catcher для захвата значений.
+        // Заполняем Data объект конкретными значениями и возвращаем заполненный Data объект
         public static IEnumerable<Data.CarModel> ParseCar(Data.Car car)
         {
             foreach (var carModelName in TestParse.carModelNameCatcher.Catch())

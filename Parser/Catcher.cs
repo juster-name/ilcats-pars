@@ -110,6 +110,8 @@ namespace VladlenKazmiruk
             }
         }
 
+// Конкретные расширения класса BaseCather:
+
 #region CarModelNameCatcher
         public class CarModelNameCatcher : BaseCather<string>
         {

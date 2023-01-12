@@ -6,9 +6,6 @@ namespace VladlenKazmiruk
     {
         static MySql.MySqlConnection dbConnection = new MySql.MySqlConnection();
 
-        static System.Collections.Generic.Dictionary<string, MySql.MySqlCommand> commands =
-            new System.Collections.Generic.Dictionary<string, MySql.MySqlCommand>();
-
         public static MySql.MySqlConnection SqlConnectOpen()
         {
             string mysqlConnectionString = System.IO.File.ReadAllText("db-string.user");
@@ -28,6 +25,11 @@ namespace VladlenKazmiruk
             return TestSql.dbConnection;
         }
 
+        // Ленивая инициализация MySqlCommand.
+        // Используем разные объекты для LastInsertedId по каждой таблице
+        static System.Collections.Generic.Dictionary<string, MySql.MySqlCommand> commands =
+            new System.Collections.Generic.Dictionary<string, MySql.MySqlCommand>();
+
         static MySql.MySqlCommand command(string name, MySql.MySqlTransaction transaction)
         {
             if (commands.ContainsKey(name) == false)
@@ -36,6 +38,7 @@ namespace VladlenKazmiruk
             }
             return commands[name];
         }
+
         static void endTransaction()
         {
             commands.Clear();
@@ -94,17 +97,8 @@ namespace VladlenKazmiruk
                 endTransaction();
             }
         }
-
-        static public void log(string arg)
-        {
-            Console.WriteLine(DateTime.Now.ToLocalTime() + ": " + arg);
-        }
-
-        static void logQueryCommand(string name)
-        {
-            Console.WriteLine(DateTime.Now.ToLocalTime() + $": Querying {name}");
-        }
-
+        // Формирование, парсинг и добавление параметров в объект MySqlCommand
+        // Возвращаем словарь по типу [@param1 = value1, param2 = value2, ...]
         static Dictionary<string,string> addParams(MySql.MySqlCommand command, int len, List<string> values)
         {
             command.Parameters.Clear();
@@ -116,32 +110,8 @@ namespace VladlenKazmiruk
             return paramsDict;
         }
 
-        static Dictionary<string, string> formParamsDict(int len, List<string> values)
-        {
-            var pKeys = parseParams(len);
-            var pValues = formValues(values);
-
-            return Enumerable.Range(0, len).ToDictionary(i => pKeys[i], i => pValues[i]);
-        }
-
-        static List<string> parseParams(int paramsN)
-        {
-            var retList = new List<string>();
-
-            for (int i = 0; i < paramsN; i++)
-            {
-                retList.Add($"@param{i}");
-            }
-
-            return retList;
-        }
-
-        static List<string>  formValues(List<string> paramValues)
-        {
-            paramValues.ForEach(x => x.Trim());
-            return paramValues;
-        }
-
+        // Добавляем новые строки в БД. Если строка существует - находим ее id
+        // Возвращаем id добавленной или существующей строки
         static int insertOrSelect(MySql.MySqlCommand command, string tableName, 
             string columnsArg, List<string> values, string where, List<string> equals)
         {
@@ -183,10 +153,52 @@ namespace VladlenKazmiruk
             return ((int)value);
         }
 
+#region Helpers
+        static public void log(string arg)
+        {
+            Console.WriteLine(DateTime.Now.ToLocalTime() + ": " + arg);
+        }
+
+        static void logQueryCommand(string name)
+        {
+            Console.WriteLine(DateTime.Now.ToLocalTime() + $": Querying {name}");
+        }
+
+        static Dictionary<string, string> formParamsDict(int len, List<string> values)
+        {
+            var pKeys = parseParams(len);
+            var pValues = formValues(values);
+
+            return Enumerable.Range(0, len).ToDictionary(i => pKeys[i], i => pValues[i]);
+        }
+
+        static List<string> parseParams(int paramsN)
+        {
+            var retList = new List<string>();
+
+            for (int i = 0; i < paramsN; i++)
+            {
+                retList.Add($"@param{i}");
+            }
+
+            return retList;
+        }
+
+        static List<string>  formValues(List<string> paramValues)
+        {
+            paramValues.ForEach(x => x.Trim());
+            return paramValues;
+        }
+
         static List<string> valueArray(params string?[] args)
         {
             return new List<string>(args.Select(val => val = (val == null ? "NULL" : val)));
         }
+#endregion
+
+// Добавление конкретных строк в ДБ из Data объектов
+// Возвращаем id с добавленной или существующей строкой
+#region DbCommands
 
         static int executeCarInsert(MySql.MySqlCommand command, Data.Car car)
         {
@@ -276,5 +288,6 @@ namespace VladlenKazmiruk
                 equals:valueArray($"{modId}", $"{keyId}", $"{valueId}"));
             
         }
+#endregion
     }
 }

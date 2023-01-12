@@ -1,17 +1,22 @@
-﻿// See https://aka.ms/new-console-template for more information
-using AngleSharp;
-using AngleSharp.Dom;
-using System.Collections.Concurrent;
-using VladlenKazmiruk.Parser;
-
-using MySql = MySqlConnector;
-using Csl = System.Console;
-
-
-namespace VladlenKazmiruk
+﻿namespace VladlenKazmiruk
 {
+    // Парсинг, буферизация и сохранение данных с сайта ilcats.ru
+    // Реализовано:
+    // 1. Парсинг моделей (на примере Toyota EU)
+    // 2. Парсинг комплектаций
+    // 3. Проход по соответствующим сформированным ссылкам для комплектаций
+    // 4. База данных для хранения результатов парсинга
+    // 5. Буферизация спарсенных данных и добавление в базу данных без дупликатов
+    // 6. VIEW выборки 
+    //
+    // * Для тесто были спарсены все модели и их комплектации из Toyota EU.
+    // * размер бд составляет 1.25 МБ на 7377 строки
+    // * примерный размер данных при 10млн значениях (размер строки варьируется от таблицы):
+    // * ((1310720 / 7377) * 10000000) / 1024 / 1024 = ~1695 МБ
+
     class CLIProgram
     {
+        // Инициализируем начальный Data объект
         public static Data.Car ToyotaEuCar = new Data.Car(){
             Name = "toyota",
             MarketCode = "EU",
@@ -20,10 +25,9 @@ namespace VladlenKazmiruk
 
         public static void Main(string[] args)
         {
-
             using (var connection = TestSql.SqlConnectOpen())
             {
-                //TestSql.InsertIntoDb(connection, getMockData());
+                //TestSql.InsertIntoDb(connection, getMockData()); // Тест на псевдо Data
                 
                  foreach (var carModel in TestParse.ParseCar(ToyotaEuCar))
                  {
