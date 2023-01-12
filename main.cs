@@ -7,8 +7,6 @@ using VladlenKazmiruk.Parser;
 using MySql = MySqlConnector;
 using Csl = System.Console;
 
-// TODO: Несколько значений из Complectation subquery в insert, откуда-то дупликаты.
-// Загрузить документы для парсинга в файл, а не ддосить их сайт каждый раз.
 
 namespace VladlenKazmiruk
 {
@@ -37,6 +35,7 @@ namespace VladlenKazmiruk
             }
             
         }
+#region MockData
         public static Data.CarModel getMockData()
             {
                 var cm = new Data.CarModel(){
@@ -81,5 +80,6 @@ namespace VladlenKazmiruk
 
                 return cm;
             }
+#endregion
     }
 }

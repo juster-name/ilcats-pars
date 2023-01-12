@@ -4,8 +4,6 @@ using AngleSharp.Dom;
 using System.Collections.Concurrent;
 using VladlenKazmiruk.Parser;
 
-// TODO: Несколько значений из Complectation subquery в insert, откуда-то дупликаты.
-// Загрузить документы для парсинга в файл, а не ддосить их сайт каждый раз.
 
 namespace VladlenKazmiruk
 {
