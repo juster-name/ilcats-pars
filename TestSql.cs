@@ -136,8 +136,8 @@ namespace VladlenKazmiruk
 
             return insertOrSelect(command("model", transaction), 
                 tableName:"Model", 
-                columnsArg: "code, name, date_prod_range, complectations, car_id",
-                valuesArg: $"'{carModel.Code}','{carModel.Name}', '{carModel.DateRange}', '{carModel.ComplectationCode}', " +
+                columnsArg: "code, name, car_id",
+                valuesArg: $"'{carModel.Code}','{carModel.Name}', " +
                     $"(SELECT id FROM Car WHERE name='{carNameOrNull}')",
                 where:"name, code", 
                 equals:$"'{carModel.Name}', '{carModel.Code}'");
@@ -148,7 +148,7 @@ namespace VladlenKazmiruk
             return insertOrSelect(command("compl", transaction), 
                 tableName:"Complectation", 
                 columnsArg: "date_prod_range, code, model_id",
-                valuesArg: $"'{compl.DateRange}', '{compl.CarModel?.ComplectationCode}','{modelIdLink}'", 
+                valuesArg: $"'{compl.CarModel?.DateRange}', '{compl.CarModel?.ComplectationCode}','{modelIdLink}'", 
                 where:"code, model_id", 
                 equals:$"'{compl.CarModel?.ComplectationCode}', '{modelIdLink}'");
         }
@@ -157,8 +157,8 @@ namespace VladlenKazmiruk
         {
             return insertOrSelect(command("mod", transaction), 
                 tableName:"Modification", 
-                columnsArg:"code, complectation_id", 
-                valuesArg: $"'{compl.ModCode}', '{compllIdLink}'", 
+                columnsArg:"code, complectation_id, date_prod_range", 
+                valuesArg: $"'{compl.ModCode}', '{compllIdLink}', '{compl.DateRange}'", 
                 where:"code, complectation_id", 
                 equals:$"'{compl.ModCode}', '{compllIdLink}'");
         }
