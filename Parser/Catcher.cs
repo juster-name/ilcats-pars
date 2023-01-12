@@ -152,9 +152,9 @@ namespace VladlenKazmiruk
             protected override CarModel initDataFromElement(IElement element)
             {
                     var carModel = new Data.CarModel(){
-                        ComplectationCode = element.QuerySelector(Selectors.code)?.TextContent,
+                        ComplectationCode = element.QuerySelector(Selectors.carModelComplCode)?.TextContent,
                         DateRange = element.QuerySelector(Selectors.carModelDates)?.TextContent,
-                        Code = element.QuerySelector(Selectors.carModelCode)?.TextContent,
+                        Code = element.QuerySelector(Selectors.code)?.TextContent,
                         Url = element.QuerySelector("a")?.GetAttribute("href")
                     };
 
