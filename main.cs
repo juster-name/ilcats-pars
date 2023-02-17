@@ -1,7 +1,5 @@
-<<<<<<< HEAD
-﻿namespace VladlenKazmiruk
-=======
-﻿using AngleSharp;
+namespace VladlenKazmiruk;
+using AngleSharp;
 using AngleSharp.Dom;
 using System.Collections.Concurrent;
 using VladlenKazmiruk.Parser;
@@ -11,7 +9,6 @@ using Csl = System.Console;
 
 
 namespace VladlenKazmiruk
->>>>>>> c769446524287e57e385a43270fe20f86e9c2574
 {
     // Парсинг, буферизация и сохранение данных с сайта ilcats.ru
     // Реализовано:
