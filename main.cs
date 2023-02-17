@@ -1,5 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using AngleSharp;
+﻿using AngleSharp;
 using AngleSharp.Dom;
 using System.Collections.Concurrent;
 using VladlenKazmiruk.Parser;
